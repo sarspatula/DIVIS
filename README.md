@@ -19,9 +19,11 @@ SPECIFIC SUCCESS CRITERIA
 * < 3 feet (1 meter) margin of error thoughout a deployment
  
 
+
 ABOUT THE NAME
 
 DIVIS is simply a combination of DIV-er and VIS-ibility. It is pronounced die-viss; a soft "s" sound not a "z".
+
 
 
 LICENSE
