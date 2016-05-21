@@ -15,20 +15,38 @@
         android:paddingTop="@dimen/appbar_padding_top"
         android:theme="@style/AppTheme.AppBarOverlay">
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay"
-            app:layout_scrollFlags="scroll|enterAlways">
+		<FrameLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+            android:background="@drawable/bordered_background">
 
-        </android.support.v7.widget.Toolbar>
+			<android.support.v7.widget.Toolbar
+				android:id="@+id/toolbar"
+				android:layout_width="wrap_content"
+				android:layout_height="?attr/actionBarSize"
+				android:layout_gravity="center"
+				app:popupTheme="@style/AppTheme.PopupOverlay"
+				app:layout_scrollFlags="scroll|enterAlways">
+
+			</android.support.v7.widget.Toolbar>
+
+		</FrameLayout>
 
         <android.support.design.widget.TabLayout
             android:id="@+id/tabs"
+			app:tabBackground="@drawable/tab_color_selector"
+			app:tabIndicatorColor="#0000"
+			app:tabTextColor="#000"
+			app:tabSelectedTextColor="#fff"
+			app:tabGravity="fill"
+			app:tabMaxWidth="0dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+
+			<!--
+			app:tabTextColor="?attr/textColorSecondary"
+			app:tabSelectedTextColor="?attr/textColorPrimary"
+			-->
 
     </android.support.design.widget.AppBarLayout>
 
@@ -38,12 +56,12 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
-    <android.support.design.widget.FloatingActionButton
+    <!--android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@android:drawable/ic_dialog_email" />
+        android:src="@android:drawable/ic_dialog_email" /-->
 
 </android.support.design.widget.CoordinatorLayout>

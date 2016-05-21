@@ -2,4 +2,7 @@
     <string name="app_name">DIVIS</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
+    <string name="title_settings">Settings</string>
+    <string name="title_calibrate">Calibrate</string>
+    <string name="title_data">Data</string>
 </resources>
