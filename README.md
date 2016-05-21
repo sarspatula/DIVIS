@@ -5,7 +5,9 @@ DIVIS is a novel sensor that uses fiber optic cable, a mostly submerged light co
  
 Our objective is to create an affordable, reliable and accurate system capable of predicting same day and forecasted (24hrs +) water visibility and ultimately a plan to incentivize and manage installation and ongoing maintenance by the diving community.
 
-Currently this repository only contains code for the DIVIS app which interprets data from the DIVIS light collection unit, but eventually we will update the repository with the already developed 3D image files for printed parts and designs for the custom cell case and light collection unit.
+Currently this repository only contains code for the DIVIS app which interprets data from the DIVIS light collection unit, but eventually we will update the repository with the already developed 3D image files for printed parts for the custom cell case and designs and instructions to construct the light collection unit.
+
+The DIVIS sensor as currently designed can be printed and assembled as a DIY project with minimal skill requirements. 
 
 More about the goals of this project... 
 
