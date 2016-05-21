@@ -21,3 +21,6 @@ ABOUT THE NAME
 
 DIVIS is simply a combination of DIV-er and VIS-ibility. It is pronounced die-viss; a soft "s" sound not a "z".
 
+LICENSE
+This software is licensed under the GNU GENERAL PUBLIC LICENSE Version 3
+
