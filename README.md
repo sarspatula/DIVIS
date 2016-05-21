@@ -14,7 +14,7 @@ More about the goals of this project.
 SPECIFIC SUCCESS CRITERIA
 * < $100 to build and deploy
 * < $100 / yr to operate/maintain
-* >6 months in water with no maintenance
+* > 6 months in water with no maintenance
 * < 3 feet (1 meter) margin of error thoughout a deployment
  
 ABOUT THE NAME
