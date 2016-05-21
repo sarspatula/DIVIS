@@ -19,5 +19,5 @@ SPECIFIC SUCCESS CRITERIA
  
 ABOUT THE NAME
 
-DIVIS is simply a combination of DIV-er and VIS-ibility. Is is pronounced die-viss; a soft "s" sound not a "z".
+DIVIS is simply a combination of DIV-er and VIS-ibility. It is pronounced die-viss; a soft "s" sound not a "z".
 
