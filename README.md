@@ -1,6 +1,6 @@
 # DIVIS
 
-"How's the vis?", is perhaps THE question among leisure divers. Observing any popular dive site in the cold waters of the Puget Sound, WA USA, for example, would reveal interest in water visibility to be near universal. Its the first question asked by any diver arriving on site to their colleagues emerging from the water.
+"How's the vis?", is perhaps THE question among leisure divers. Observing any popular dive site in the cold waters of the Puget Sound, WA USA, for example, would reveal interest in water visibility to be near universal. It is the first question asked by any diver arriving on site to their colleagues emerging from the water.
  
 Our objective is to create an affordable, reliable and accurate system capable of predicting same day and forecasted (24hrs +) water visibility and ultimately a plan to incentivize and manage installation and ongoing maintenance by the diving community.
 
