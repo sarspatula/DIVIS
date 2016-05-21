@@ -1,5 +1,5 @@
 # DIVIS
-DIVIS is a novel sensor that uses fiber optic cable, a mostly submerged light collection unit and a cell phone to measure light color and intensity at two (or more) depths in order to predict water visibility for recreational divers.
+DIVIS is a sensor that uses fiber optic cable, a mostly submerged light collection unit and a cell phone to measure light color and intensity at two (or more) depths in order to predict water visibility for recreational divers.
 
 "How's the vis?", is perhaps THE question among leisure divers. Observing any popular dive site in the cold waters of the Puget Sound, WA USA, for example, would reveal interest in water visibility to be near universal. Its the first question asked by any diver arriving on site to their colleagues emerging from the water.
  
