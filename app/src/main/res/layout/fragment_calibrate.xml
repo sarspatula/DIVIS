@@ -1,17 +1,103 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context="com.example.m.divis.MainActivity$PlaceholderFragment">
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	tools:context="com.example.m.divis.MainActivity$PlaceholderFragment">
 
-    <FrameLayout
-        android:id="@+id/camera_view"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+	<!--
+	android:paddingLeft="@dimen/activity_horizontal_margin"
+	android:paddingRight="@dimen/activity_horizontal_margin"
+	android:paddingTop="@dimen/activity_vertical_margin"
+	android:paddingBottom="@dimen/activity_vertical_margin"
+	-->
+
+	<FrameLayout
+		android:id="@+id/camera_view"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
 		android:layout_weight="1" />
+
+	<GridLayout
+		android:id="@+id/control_grid"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:columnCount="4"
+		android:rowCount="4"
+		android:orientation="horizontal"
+		tools:context=".GridXMLActivity" >
+
+		<com.example.m.divis.TextViewWithFont
+			style="@style/GridTextView"
+			android:layout_columnWeight="1" />
+
+		<com.example.m.divis.TextViewWithFont
+			style="@style/GridTextView"
+			android:text="X" />
+
+		<com.example.m.divis.TextViewWithFont
+			style="@style/GridTextView"
+			android:text="Y" />
+
+		<com.example.m.divis.TextViewWithFont
+			style="@style/GridTextView"
+			android:text="Size" />
+
+		<com.example.m.divis.TextViewWithFont
+			style="@style/GridTextView"
+			android:text="upper" />
+
+		<com.example.m.divis.EditTextWithFont
+			android:id="@+id/upper_x"
+			style="@style/GridTextView"
+			android:text="200" />
+
+		<com.example.m.divis.EditTextWithFont
+			android:id="@+id/upper_y"
+			style="@style/GridTextView"
+			android:text="150" />
+
+		<com.example.m.divis.EditTextWithFont
+			android:id="@+id/upper_size"
+			style="@style/GridTextView"
+			android:text="100" />
+
+		<com.example.m.divis.TextViewWithFont
+			style="@style/GridTextView"
+			android:text="lower" />
+
+		<com.example.m.divis.EditTextWithFont
+			android:id="@+id/lower_x"
+			style="@style/GridTextView"
+			android:text="200" />
+
+		<com.example.m.divis.EditTextWithFont
+			android:id="@+id/lower_y"
+			style="@style/GridTextView"
+			android:text="150" />
+
+		<com.example.m.divis.EditTextWithFont
+			android:id="@+id/lower_size"
+			style="@style/GridTextView"
+			android:text="100" />
+
+		<com.example.m.divis.TextViewWithFont
+			style="@style/GridTextView"
+			android:background="@drawable/bordered_background"
+			android:layout_height="48dp"
+			android:layout_columnSpan="2"
+			android:layout_weight="1"
+			android:gravity="center_vertical"
+			android:text="@string/calibrate_exposure" />
+
+		<Spinner
+			android:id="@+id/camera_exposure"
+			style="@style/GridTextView"
+			android:layout_height="48dp"
+			android:background="@drawable/bordered_background"
+			android:layout_columnSpan="2"
+			android:text="0" />
+
+	</GridLayout>
 
 </RelativeLayout>

@@ -5,4 +5,10 @@
     <string name="title_settings">Settings</string>
     <string name="title_calibrate">Calibrate</string>
     <string name="title_data">Data</string>
+    <string name="calibrate_x">X</string>
+    <string name="calibrate_y">Y</string>
+    <string name="calibrate_size">Size</string>
+    <string name="calibrate_upper">upper</string>
+    <string name="calibrate_lower">lower</string>
+    <string name="calibrate_exposure">Camera Exposure</string>
 </resources>

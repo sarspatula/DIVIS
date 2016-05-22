@@ -1,2 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<items version="2" />
+<items version="2" >
+
+    <item
+        jar="/home/m/Studio_Projects/DIVIS/app/build/intermediates/exploded-aar/com.android.support/support-v4/23.1.1/jars/classes.jar"
+        jumboMode="true"
+        revision="23.0.2"
+        sha1="6cbc7773921fcfedbe55657578f0cbfe614778dc">
+        <dex dex="/home/m/Studio_Projects/DIVIS/app/build/intermediates/transforms/dex/debug/folders/1000/10/com.android.support-support-v4-23.1.1_72e506922f1cbeb36fb6d34ae63b6c754a2224fa/classes.dex" />
+    </item>
+    <item
+        jar="/home/m/Studio_Projects/DIVIS/app/build/intermediates/incremental-runtime-classes/debug/instant-run.jar"
+        jumboMode="true"
+        revision="23.0.2"
+        sha1="bef6bb4ddbc16538eeda90c996d5cb5153d2d47b">
+        <dex dex="/home/m/Studio_Projects/DIVIS/app/build/intermediates/transforms/dex/debug/folders/1000/10/instant-run_09d81834f77eef51a76013ea825960d0b0c20844/classes.dex" />
+    </item>
+    <item
+        jar="/home/m/Studio_Projects/DIVIS/app/build/intermediates/exploded-aar/com.android.support/design/23.1.1/jars/classes.jar"
+        jumboMode="true"
+        revision="23.0.2"
+        sha1="379471b2bd17d9737c050345c08e8c7d16589784">
+        <dex dex="/home/m/Studio_Projects/DIVIS/app/build/intermediates/transforms/dex/debug/folders/1000/10/com.android.support-design-23.1.1_7d5a8e9388fb3dc8fe6f2318a1ac3439b558e6b3/classes.dex" />
+    </item>
+    <item
+        jar="/home/m/Studio_Projects/DIVIS/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.1.1/jars/classes.jar"
+        jumboMode="true"
+        revision="23.0.2"
+        sha1="5c5699834e9722f1c288fea2de82725d078ba127">
+        <dex dex="/home/m/Studio_Projects/DIVIS/app/build/intermediates/transforms/dex/debug/folders/1000/10/com.android.support-appcompat-v7-23.1.1_d07a7b1233dc3c1f4ea89a69932eedb38ea868d1/classes.dex" />
+    </item>
+    <item
+        jar="/home/m/Studio_Projects/DIVIS/app/build/intermediates/exploded-aar/com.android.support/support-v4/23.1.1/jars/libs/internal_impl-23.1.1.jar"
+        jumboMode="true"
+        revision="23.0.2"
+        sha1="a4de9c81ae239414e1ed0f86441b02abaf29bca9">
+        <dex dex="/home/m/Studio_Projects/DIVIS/app/build/intermediates/transforms/dex/debug/folders/1000/10/internal_impl-23.1.1_55814c3f14db1ec9299d2728590d5fc23b98e3ac/classes.dex" />
+    </item>
+    <item
+        jar="/home/m/Studio_Projects/DIVIS/app/build/intermediates/incremental-classes/debug/instant-run-bootstrap.jar"
+        jumboMode="true"
+        revision="23.0.2"
+        sha1="3e90aad794586b40f5f2faa69b2837685492b171">
+        <dex dex="/home/m/Studio_Projects/DIVIS/app/build/intermediates/transforms/dex/debug/folders/1000/10/instant-run-bootstrap_3cf23e5eaa0a38597a207158db3eb2da90af5a85/classes.dex" />
+    </item>
+    <item
+        jar="/home/m/Studio_Projects/DIVIS/app/build/intermediates/exploded-aar/com.android.support/recyclerview-v7/23.1.1/jars/classes.jar"
+        jumboMode="true"
+        revision="23.0.2"
+        sha1="09c5e804bc67fc0580360043dff067df574a60d4">
+        <dex dex="/home/m/Studio_Projects/DIVIS/app/build/intermediates/transforms/dex/debug/folders/1000/10/com.android.support-recyclerview-v7-23.1.1_b48acfa443840f520795c1d27083b1d17cc27558/classes.dex" />
+    </item>
+    <item
+        jar="/home/m/Android/Sdk/extras/android/m2repository/com/android/support/support-annotations/23.1.1/support-annotations-23.1.1.jar"
+        jumboMode="true"
+        revision="23.0.2"
+        sha1="8d680ba5a623724d1fb0e81c36a790f023a6cede">
+        <dex dex="/home/m/Studio_Projects/DIVIS/app/build/intermediates/transforms/dex/debug/folders/1000/10/support-annotations-23.1.1_70d597c9a53c60558c27831516a67fffe71b29d2/classes.dex" />
+    </item>
+
+</items>

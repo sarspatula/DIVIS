@@ -1,5 +1,7 @@
 package com.example.m.divis;
 
+import android.graphics.Typeface;
+
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -23,6 +25,9 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
+	// custom font Calibri.ttf
+	public static Typeface typeface;// = Typeface.createFromAsset(getContext().getAssets(), "fonts/Calibri.ttf");
+
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
 	 * fragments for each of the sections. We use a
@@ -42,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+
+		typeface = Typeface.createFromAsset(getAssets(), "fonts/Calibri.ttf");
 
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
@@ -68,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
 	  */
 	  
 	}
-
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
