@@ -355,6 +355,7 @@ public class FragmentCalibrate extends Fragment {
 			adapter.add(Float.toString(i * step));
 		}
 
+		adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
 		mCameraExposure.setAdapter(adapter);
 		mCameraExposure.setSelection(current - min);
 

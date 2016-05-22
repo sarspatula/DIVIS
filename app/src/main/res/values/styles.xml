@@ -28,7 +28,20 @@
 		<item name="android:textSize">18sp</item>
 	</style>
 
+	<style name="MyTextViewSecondary" parent="MyTextView">
+		<item name="android:textColor">@color/colorTextSecondary</item>
+	</style>
+
 	<style name="GridTextView" parent="MyTextView">
+		<!-- FIXME: over min sdk level -->
+		<item name="android:layout_columnWeight">1</item>
+	</style>
+
+	<style name="MySpinner" parent="MyTextView">
+		<item name="android:popupBackground">@color/colorSecondary</item>
+	</style>
+
+	<style name="GridSpinner" parent="MySpinner">
 		<!-- FIXME: over min sdk level -->
 		<item name="android:layout_columnWeight">1</item>
 	</style>
