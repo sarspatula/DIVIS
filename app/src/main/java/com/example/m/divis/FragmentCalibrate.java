@@ -4,8 +4,10 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ShapeDrawable;
@@ -30,6 +32,7 @@ import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -58,16 +61,12 @@ public class FragmentCalibrate extends Fragment {
 	private static final String TAG = "DVISFragmentCalibrate";
 	private static final int MY_PERMISSIONS_REQUEST_CAMERA = 42;
 
-	private ShapeDrawable mUpperShape;
-	private ShapeDrawable mLowerShape;
-	private LayerDrawable mLayerDrawable;
+	// class encapsulates drawable, draw style, center, and radius
+	private Shape mUpperShape;
+	private Shape mLowerShape;
 
-	private int strokeWidth = 5;
-	private int strokeColor = Color.rgb(255,255,255);
-	private Point mLowerCenter;
-	private Point mUpperCenter;
-	private int mLowerRadius = 100;
-	private int mUpperRadius = 100;
+	private Drawable[] mDrawList;
+	private LayerDrawable mLayerDrawable;
 
 	// Native camera.
 	private Camera mCamera;
@@ -327,13 +326,96 @@ public class FragmentCalibrate extends Fragment {
 			return optimalSize;
 		}
 	}
-	
+
+	protected class MyOnTouchListener implements View.OnTouchListener {
+		Shape shape;
+		Point origin;
+		Point shape_origin;
+
+		Shape touchedShape(PointF pt)
+		{
+			PointF ptfBmp = transformCoordTouchToBitmap(pt.x, pt.y, true);
+			Point ptBmp = new Point((int)Math.floor(ptfBmp.x), (int)Math.floor(ptfBmp.y));
+			Log.d(TAG, "touchedShape: " + pt.toString());
+			if(pixelWithinArea(mUpperShape, ptBmp))
+				return mUpperShape;
+			if(pixelWithinArea(mLowerShape, ptBmp))
+				return mLowerShape;
+			return null;
+		}
+
+		@Override
+		public boolean onTouch(View v, MotionEvent event) {
+			PointF curr = new PointF(event.getX(), event.getY());
+
+			switch(event.getAction()) {
+			case MotionEvent.ACTION_DOWN:
+				shape = touchedShape(curr);
+				if(shape != null) {
+					Log.d(TAG, "Begin dragging shape");
+					shape_origin = shape.center;
+				}
+				break;
+			case MotionEvent.ACTION_MOVE:
+				if(shape != null) {
+					Point p = new Point();
+					p.x = (int)(curr.x - origin.x);
+					p.y = (int)(curr.y - origin.y);
+
+					shape.center.x = shape_origin.x + p.x;
+					shape.center.y = shape_origin.y + p.y;
+
+					mDrawList[1] = mUpperShape.update();
+					mDrawList[2] = mLowerShape.update();
+					mLayerDrawable = new LayerDrawable(mDrawList);
+					mCanvas.setImageDrawable(mLayerDrawable);
+					Log.d("DEBUG", "drag " + p.x + "x" + p.y);
+				}
+				break;
+			case MotionEvent.ACTION_UP:
+				if(shape != null)
+					Log.d(TAG, "End dragging shape");
+				shape = null;
+				break;
+			}
+			return true;
+		}
+	}
+
+	boolean pixelWithinArea(Shape s, Point px)
+	{
+		int dx = s.center.x - px.x;
+		int dy = s.center.y - px.y;
+		int dist = (int)Math.floor(Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)));
+		Log.d(TAG, "pixelWithinArea: dist: " + dist);
+		if(dist > s.radius)
+			return false;
+		return true;
+	}
+
+	// Transform coordinates from screen to that of the imageview's drawable
+	public PointF transformCoordTouchToBitmap(float x, float y, boolean clipToBitmap) {
+		Drawable d = mCanvas.getDrawable();
+		float origW = d.getIntrinsicWidth();
+		float origH = d.getIntrinsicHeight();
+		float finalX = origW / mCanvas.getWidth();
+		float finalY = origH / mCanvas.getHeight();
+
+		if (clipToBitmap) {
+			finalX = Math.min(Math.max(finalX, 0), origW);
+			finalY = Math.min(Math.max(finalY, 0), origH);
+		}
+
+		return new PointF(finalX , finalY);
+	}
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment_calibrate, container, false);
 		mCameraView = v;
 		mCameraExposure = (Spinner)v.findViewById(R.id.camera_exposure);
 		mCanvas = (ImageView)v.findViewById(R.id.canvas);
+		mCanvas.setOnTouchListener(new MyOnTouchListener());
 
 		// GridLayout's weight support requires android 5.0+
 		// workaround that for older devices
@@ -432,22 +514,33 @@ public class FragmentCalibrate extends Fragment {
 		});
 	}
 
+	Point validateShapePosition(Point center, int radius)
+	{
+		if(center.x - radius < 0) {
+			int dx = radius - center.x;
+			center.x += dx;
+		}
+		if(center.x + radius > mCaptureWidth) {
+			int dx = center.x + radius - mCaptureWidth;
+			center.x -= dx;
+		}
+		if(center.y - radius < 0) {
+			int dy = radius - center.y;
+			center.y += dy;
+		}
+		if(center.y + radius > mCaptureWidth) {
+			int dy = center.y + radius - mCaptureWidth;
+			center.y -= dy;
+		}
+		return center;
+	}
+
 	void setupControlShapes()
 	{
 		// TODO: fail gracefully if camera failed to open
 
-		mUpperShape = new ShapeDrawable(new OvalShape());
-		mLowerShape = new ShapeDrawable(new OvalShape());
-
-		mUpperShape.getPaint().setStrokeWidth(strokeWidth);
-		mUpperShape.getPaint().setAntiAlias(true);
-		mUpperShape.getPaint().setColor(strokeColor);
-		mUpperShape.getPaint().setStyle(Paint.Style.STROKE);
-
-		mLowerShape.getPaint().setStrokeWidth(strokeWidth);
-		mLowerShape.getPaint().setAntiAlias(true);
-		mLowerShape.getPaint().setColor(strokeColor);
-		mLowerShape.getPaint().setStyle(Paint.Style.STROKE);
+		mUpperShape = new Shape();
+		mLowerShape = new Shape();
 
 		// ensure drawable size matches image capture size
 		ShapeDrawable blank_drawable = new ShapeDrawable();
@@ -457,32 +550,35 @@ public class FragmentCalibrate extends Fragment {
 		blank_drawable.getPaint().setColor(Color.argb(0,0,0,0));
 		blank_drawable.getPaint().setStyle(Paint.Style.STROKE);
 
-		Drawable[] drawlist = new Drawable[3];
-		drawlist[0] = blank_drawable;
-		drawlist[1] = mUpperShape;
-		drawlist[2] = mLowerShape;
-		mLayerDrawable = new LayerDrawable(drawlist);
+		Drawable[] mDrawList = new Drawable[3];
+		mDrawList[0] = blank_drawable;
+		mDrawList[1] = mUpperShape.drawable;
+		mDrawList[2] = mLowerShape.drawable;
+		mLayerDrawable = new LayerDrawable(mDrawList);
 
 		// TODO: restore last settings
-		mUpperCenter = new Point(100, 150);
-		mLowerCenter = new Point(350, 150);
+		mUpperShape.center = validateShapePosition(new Point(100, 150), mUpperShape.radius);
+		mLowerShape.center = validateShapePosition(new Point(350, 150), mLowerShape.radius);
+
+		mUpperShape.update();
+		mLowerShape.update();
 
 		// blank drawable, size matched to image capture.  TODO: needed?
 //		mLayerDrawable.setLayerSize(0, mCaptureSize.width, mCaptureSize.height);
 
 		// upper
 		mLayerDrawable.setLayerInset(1,
-				mUpperCenter.x - mUpperRadius, // left
-				mUpperCenter.y - mUpperRadius, // top
-				mCaptureWidth - (mUpperCenter.x + mUpperRadius), // right
-				mCaptureHeight - (mUpperCenter.y + mUpperRadius)); // bottom
+				mUpperShape.center.x - mUpperShape.radius, // left
+				mUpperShape.center.y - mUpperShape.radius, // top
+				mCaptureWidth - (mUpperShape.center.x + mUpperShape.radius), // right
+				mCaptureHeight - (mUpperShape.center.y + mUpperShape.radius)); // bottom
 
 		// lower
 		mLayerDrawable.setLayerInset(2,
-				mLowerCenter.x - mLowerRadius, // left
-				mLowerCenter.y - mLowerRadius, // top
-				mCaptureWidth - (mLowerCenter.x + mLowerRadius), // right
-				mCaptureHeight - (mLowerCenter.y + mLowerRadius)); // bottom
+				mLowerShape.center.x - mLowerShape.radius, // left
+				mLowerShape.center.y - mLowerShape.radius, // top
+				mCaptureWidth - (mLowerShape.center.x + mLowerShape.radius), // right
+				mCaptureHeight - (mLowerShape.center.y + mLowerShape.radius)); // bottom
 
 		mCanvas.setImageDrawable(mLayerDrawable);
 		mCanvas.setScaleType(ImageView.ScaleType.FIT_XY);
