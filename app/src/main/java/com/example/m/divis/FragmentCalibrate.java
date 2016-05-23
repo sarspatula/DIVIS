@@ -42,6 +42,7 @@ import android.view.WindowManager;
 
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.GridLayout;
 import android.widget.ImageView;
@@ -83,10 +84,17 @@ public class FragmentCalibrate extends Fragment {
 	// Reference to the containing view.
 	private View mCameraView;
 
-	private Spinner mCameraExposure;
-
 	// control shapes will be drawn on this view
 	private ImageView mCanvas;
+
+	// controls overlay
+	private EditText mEditUpperX;
+	private EditText mEditUpperY;
+	private EditText mEditUpperSize;
+	private EditText mEditLowerX;
+	private EditText mEditLowerY;
+	private EditText mEditLowerSize;
+	private Spinner mCameraExposure;
 
 	class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -329,12 +337,12 @@ public class FragmentCalibrate extends Fragment {
 
 	protected class MyOnTouchListener implements View.OnTouchListener {
 		Shape shape;
-		Point origin;
+		PointF origin;
 		Point shape_origin;
 
 		Shape touchedShape(PointF pt)
 		{
-			PointF ptfBmp = transformCoordTouchToBitmap(pt.x, pt.y, true);
+			PointF ptfBmp = transformCoordTouchToBitmap(pt.x, pt.y);
 			Point ptBmp = new Point((int)Math.floor(ptfBmp.x), (int)Math.floor(ptfBmp.y));
 			Log.d(TAG, "touchedShape: " + pt.toString());
 			if(pixelWithinArea(mUpperShape, ptBmp))
@@ -353,7 +361,9 @@ public class FragmentCalibrate extends Fragment {
 				shape = touchedShape(curr);
 				if(shape != null) {
 					Log.d(TAG, "Begin dragging shape");
+					((MainActivity)getActivity()).mViewPager.enabled = false;
 					shape_origin = shape.center;
+					origin = curr;
 				}
 				break;
 			case MotionEvent.ACTION_MOVE:
@@ -362,20 +372,30 @@ public class FragmentCalibrate extends Fragment {
 					p.x = (int)(curr.x - origin.x);
 					p.y = (int)(curr.y - origin.y);
 
-					shape.center.x = shape_origin.x + p.x;
-					shape.center.y = shape_origin.y + p.y;
+					PointF pf2 = transformCoordTouchToBitmap((float)p.x, (float)p.y);
+					Point p2 = new Point((int)Math.floor(pf2.x), (int)Math.floor(pf2.y));
 
-					mDrawList[1] = mUpperShape.update();
-					mDrawList[2] = mLowerShape.update();
-					mLayerDrawable = new LayerDrawable(mDrawList);
-					mCanvas.setImageDrawable(mLayerDrawable);
-					Log.d("DEBUG", "drag " + p.x + "x" + p.y);
+					/*
+					shape.center.x = shape_origin.x + p2.x;
+					shape.center.y = shape_origin.y + p2.y;
+					shape.center = validateShapePosition(shape.center, shape.radius);
+					*/
+
+					// centered on touch
+					PointF currf2 = transformCoordTouchToBitmap((float)curr.x, (float)curr.y);
+					Point curr2 = new Point((int)Math.floor(currf2.x), (int)Math.floor(currf2.y));
+					shape.center = validateShapePosition(curr2, shape.radius);
+
+					updateDrawables();
+//					Log.d(TAG, "drag " + p2.x + "x" + p2.y + " : " + shape.center.toString());
+					Log.d(TAG, "drag " + curr2.x + "x" + curr2.y + " : " + shape.center.toString());
 				}
 				break;
 			case MotionEvent.ACTION_UP:
 				if(shape != null)
 					Log.d(TAG, "End dragging shape");
 				shape = null;
+				((MainActivity)getActivity()).mViewPager.enabled = true;
 				break;
 			}
 			return true;
@@ -394,26 +414,39 @@ public class FragmentCalibrate extends Fragment {
 	}
 
 	// Transform coordinates from screen to that of the imageview's drawable
-	public PointF transformCoordTouchToBitmap(float x, float y, boolean clipToBitmap) {
+	public PointF transformCoordTouchToBitmap(float x, float y) {
 		Drawable d = mCanvas.getDrawable();
-		float origW = d.getIntrinsicWidth();
-		float origH = d.getIntrinsicHeight();
-		float finalX = origW / mCanvas.getWidth();
-		float finalY = origH / mCanvas.getHeight();
 
-		if (clipToBitmap) {
-			finalX = Math.min(Math.max(finalX, 0), origW);
-			finalY = Math.min(Math.max(finalY, 0), origH);
-		}
+		float percentX = x / mCanvas.getWidth();
+		float percentY = y / mCanvas.getHeight();
 
-		return new PointF(finalX , finalY);
+		float coordX = percentX * mCaptureWidth;
+		float coordY = percentY * mCaptureHeight;
+/*
+//		float finalX = origW / mCanvas.getWidth();
+//		float finalY = origH / mCanvas.getHeight();
+		float finalX = x / mCanvas.getWidth() * origW;
+		float finalY = y / mCanvas.getHeight() * origH;
+*/
+//		Log.d(TAG, "COORDS: " + origW + "x" + origH + " : " + mCanvas.getWidth() + "x" + mCanvas.getHeight());
+
+//		return new PointF(finalX , finalY);
+		return new PointF(coordX , coordY);
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment_calibrate, container, false);
 		mCameraView = v;
+
+		mEditUpperX = (EditText)v.findViewById(R.id.upper_x);
+		mEditUpperY = (EditText)v.findViewById(R.id.upper_y);
+		mEditUpperSize = (EditText)v.findViewById(R.id.upper_size);
+		mEditLowerX = (EditText)v.findViewById(R.id.lower_x);
+		mEditLowerY = (EditText)v.findViewById(R.id.lower_y);
+		mEditLowerSize = (EditText)v.findViewById(R.id.lower_size);
 		mCameraExposure = (Spinner)v.findViewById(R.id.camera_exposure);
+
 		mCanvas = (ImageView)v.findViewById(R.id.canvas);
 		mCanvas.setOnTouchListener(new MyOnTouchListener());
 
@@ -535,36 +568,11 @@ public class FragmentCalibrate extends Fragment {
 		return center;
 	}
 
-	void setupControlShapes()
+	void updateDrawables()
 	{
-		// TODO: fail gracefully if camera failed to open
-
-		mUpperShape = new Shape();
-		mLowerShape = new Shape();
-
-		// ensure drawable size matches image capture size
-		ShapeDrawable blank_drawable = new ShapeDrawable();
-		blank_drawable.setIntrinsicWidth(mCaptureSize.width);
-		blank_drawable.setIntrinsicHeight(mCaptureSize.height);
-		blank_drawable.getPaint().setStrokeWidth(0);
-		blank_drawable.getPaint().setColor(Color.argb(0,0,0,0));
-		blank_drawable.getPaint().setStyle(Paint.Style.STROKE);
-
-		Drawable[] mDrawList = new Drawable[3];
-		mDrawList[0] = blank_drawable;
-		mDrawList[1] = mUpperShape.drawable;
-		mDrawList[2] = mLowerShape.drawable;
+		mDrawList[1] = mUpperShape.update();
+		mDrawList[2] = mLowerShape.update();
 		mLayerDrawable = new LayerDrawable(mDrawList);
-
-		// TODO: restore last settings
-		mUpperShape.center = validateShapePosition(new Point(100, 150), mUpperShape.radius);
-		mLowerShape.center = validateShapePosition(new Point(350, 150), mLowerShape.radius);
-
-		mUpperShape.update();
-		mLowerShape.update();
-
-		// blank drawable, size matched to image capture.  TODO: needed?
-//		mLayerDrawable.setLayerSize(0, mCaptureSize.width, mCaptureSize.height);
 
 		// upper
 		mLayerDrawable.setLayerInset(1,
@@ -582,10 +590,40 @@ public class FragmentCalibrate extends Fragment {
 
 		mCanvas.setImageDrawable(mLayerDrawable);
 		mCanvas.setScaleType(ImageView.ScaleType.FIT_XY);
+		mCanvas.invalidate();
+
+		// update ui
+		mEditUpperX.setText(Integer.toString(mUpperShape.center.x));
+		mEditUpperY.setText(Integer.toString(mUpperShape.center.y));
+		mEditUpperSize.setText(Integer.toString(mUpperShape.radius));
+		mEditLowerX.setText(Integer.toString(mLowerShape.center.x));
+		mEditLowerY.setText(Integer.toString(mLowerShape.center.y));
+		mEditLowerSize.setText(Integer.toString(mLowerShape.radius));
 	}
 
-	void updateDrawables()
+	void setupControlShapes()
 	{
+		// TODO: fail gracefully if camera failed to open
+
+		mUpperShape = new Shape();
+		mLowerShape = new Shape();
+
+		// ensure drawable size matches image capture size
+		ShapeDrawable blank_drawable = new ShapeDrawable();
+		blank_drawable.setIntrinsicWidth(mCaptureSize.width);
+		blank_drawable.setIntrinsicHeight(mCaptureSize.height);
+		blank_drawable.getPaint().setStrokeWidth(0);
+		blank_drawable.getPaint().setColor(Color.argb(0,0,0,0));
+		blank_drawable.getPaint().setStyle(Paint.Style.STROKE);
+
+		mDrawList = new Drawable[3];
+		mDrawList[0] = blank_drawable;
+
+		// TODO: restore last settings
+		mUpperShape.center = validateShapePosition(new Point(100, 150), mUpperShape.radius);
+		mLowerShape.center = validateShapePosition(new Point(350, 150), mLowerShape.radius);
+
+		updateDrawables();
 	}
 
 	@Override

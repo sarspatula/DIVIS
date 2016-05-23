@@ -23,6 +23,7 @@ import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -45,20 +46,33 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-public class EditTextWithFont extends EditText {
+public class MyViewPager extends ViewPager {
+	public boolean enabled;
 
-	public EditTextWithFont(Context context, AttributeSet attrs) {
+	public MyViewPager(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		this.setTypeface(MainActivity.typeface);
+		this.enabled = true;
 	}
 
-	public EditTextWithFont(Context context, AttributeSet attrs, int defStyle) {
-		super(context, attrs, defStyle);
-		this.setTypeface(MainActivity.typeface);
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		if (this.enabled) {
+			return super.onTouchEvent(event);
+		}
+
+		return false;
 	}
 
-	public EditTextWithFont(Context context) {
-		super(context);
-		this.setTypeface(MainActivity.typeface);
+	@Override
+	public boolean onInterceptTouchEvent(MotionEvent event) {
+		if (this.enabled) {
+			return super.onInterceptTouchEvent(event);
+		}
+
+		return false;
+	}
+
+	public void setPagingEnabled(boolean enabled) {
+		this.enabled = enabled;
 	}
 }
