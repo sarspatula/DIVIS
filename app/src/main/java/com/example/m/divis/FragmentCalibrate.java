@@ -387,8 +387,12 @@ public class FragmentCalibrate extends Fragment {
 					shape.center = validateShapePosition(curr2, shape.radius);
 
 					updateDrawables();
+
+					// FIXME: stops redrawing for some reason?  Fixes it?
+					((MainActivity)getActivity()).mViewPager.invalidate();
+
 //					Log.d(TAG, "drag " + p2.x + "x" + p2.y + " : " + shape.center.toString());
-					Log.d(TAG, "drag " + curr2.x + "x" + curr2.y + " : " + shape.center.toString());
+//					Log.d(TAG, "drag " + curr2.x + "x" + curr2.y + " : " + shape.center.toString());
 				}
 				break;
 			case MotionEvent.ACTION_UP:
@@ -561,8 +565,8 @@ public class FragmentCalibrate extends Fragment {
 			int dy = radius - center.y;
 			center.y += dy;
 		}
-		if(center.y + radius > mCaptureWidth) {
-			int dy = center.y + radius - mCaptureWidth;
+		if(center.y + radius > mCaptureHeight) {
+			int dy = center.y + radius - mCaptureHeight;
 			center.y -= dy;
 		}
 		return center;
@@ -574,19 +578,41 @@ public class FragmentCalibrate extends Fragment {
 		mDrawList[2] = mLowerShape.update();
 		mLayerDrawable = new LayerDrawable(mDrawList);
 
+		mLayerDrawable.setLayerSize(0, mCaptureWidth, mCaptureHeight);
+
 		// upper
+//		mLayerDrawable.setLayerSize(1, mCaptureWidth, mCaptureHeight);
+		mLayerDrawable.setLayerSize(1, mUpperShape.radius*2, mUpperShape.radius*2);
 		mLayerDrawable.setLayerInset(1,
 				mUpperShape.center.x - mUpperShape.radius, // left
 				mUpperShape.center.y - mUpperShape.radius, // top
 				mCaptureWidth - (mUpperShape.center.x + mUpperShape.radius), // right
 				mCaptureHeight - (mUpperShape.center.y + mUpperShape.radius)); // bottom
 
+//		mLayerDrawable.setLayerSize(1, mUpperShape.radius*2, mUpperShape.radius*2);
+//		mLayerDrawable.setLayerInsetTop(1, 440);
+		/*
+		mLayerDrawable.setLayerInset(1,
+				mUpperShape.center.x - mUpperShape.radius, // left
+				mUpperShape.center.y - mUpperShape.radius, // top
+				0, // right
+				0); // bottom
+		*/
+
 		// lower
+		mLayerDrawable.setLayerSize(2, mCaptureWidth, mCaptureHeight);
 		mLayerDrawable.setLayerInset(2,
 				mLowerShape.center.x - mLowerShape.radius, // left
 				mLowerShape.center.y - mLowerShape.radius, // top
 				mCaptureWidth - (mLowerShape.center.x + mLowerShape.radius), // right
 				mCaptureHeight - (mLowerShape.center.y + mLowerShape.radius)); // bottom
+
+		Log.d(TAG, "layer 0 sz: " + mLayerDrawable.getLayerWidth(0) + "x" + mLayerDrawable.getLayerHeight(0));
+		Log.d(TAG, "layer 1 sz: " + mLayerDrawable.getLayerWidth(1) + "x" + mLayerDrawable.getLayerHeight(1));
+		Log.d(TAG, "layer 2 sz: " + mLayerDrawable.getLayerWidth(2) + "x" + mLayerDrawable.getLayerHeight(2));
+
+		Log.d(TAG, "shape width upper: " + mUpperShape.drawable.getIntrinsicWidth());
+		Log.d(TAG, "shape width lower: " + mLowerShape.drawable.getIntrinsicWidth());
 
 		mCanvas.setImageDrawable(mLayerDrawable);
 		mCanvas.setScaleType(ImageView.ScaleType.FIT_XY);
@@ -604,6 +630,8 @@ public class FragmentCalibrate extends Fragment {
 	void setupControlShapes()
 	{
 		// TODO: fail gracefully if camera failed to open
+		if(mCaptureSize == null)
+			return;
 
 		mUpperShape = new Shape();
 		mLowerShape = new Shape();
@@ -612,7 +640,7 @@ public class FragmentCalibrate extends Fragment {
 		ShapeDrawable blank_drawable = new ShapeDrawable();
 		blank_drawable.setIntrinsicWidth(mCaptureSize.width);
 		blank_drawable.setIntrinsicHeight(mCaptureSize.height);
-		blank_drawable.getPaint().setStrokeWidth(0);
+		blank_drawable.getPaint().setStrokeWidth(10);
 		blank_drawable.getPaint().setColor(Color.argb(0,0,0,0));
 		blank_drawable.getPaint().setStyle(Paint.Style.STROKE);
 
@@ -620,7 +648,9 @@ public class FragmentCalibrate extends Fragment {
 		mDrawList[0] = blank_drawable;
 
 		// TODO: restore last settings
+		mUpperShape.radius = 100;
 		mUpperShape.center = validateShapePosition(new Point(100, 150), mUpperShape.radius);
+		mLowerShape.radius = 50;
 		mLowerShape.center = validateShapePosition(new Point(350, 150), mLowerShape.radius);
 
 		updateDrawables();

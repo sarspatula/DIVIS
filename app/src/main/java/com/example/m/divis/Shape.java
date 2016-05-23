@@ -41,6 +41,10 @@ public class Shape {
 		drawable.getPaint().setAntiAlias(true);
 		drawable.getPaint().setColor(color);
 		drawable.getPaint().setStyle(Paint.Style.STROKE);
+
+		drawable.setIntrinsicWidth(radius*2);
+		drawable.setIntrinsicHeight(radius*2);
+
         return drawable;
 	}
 }
