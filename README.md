@@ -4,12 +4,11 @@
  
 Our objective is to create an affordable, reliable and accurate system capable of predicting same day and forecasted (24hrs +) water visibility.
 
-Currently this repository only contains code for the DIVIS app which interprets data from the DIVIS light collection unit, but eventually we will update the repository with the already developed 3D image files for printed parts for the custom cell case and designs and instructions to construct the light collection unit.
-
 The DIVIS sensor as currently designed can be printed and assembled as a DIY project with minimal skill requirements. 
 
+The app is currently under development. Check back soon for updates. 
 
-More about the goals of this project.
+
 
 SPECIFIC SUCCESS CRITERIA
 * < $100 to build and deploy
