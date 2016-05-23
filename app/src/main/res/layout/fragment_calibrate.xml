@@ -17,6 +17,8 @@
 		android:layout_height="match_parent"
 		android:layout_weight="1" />
 
+<!--	<android.support.v7.widget.GridLayout xmlns:grid="http://schemas.android.com/apk/res-auto"
+		xmlns:android="http://schemas.android.com/apk/res/android"> -->
 	<GridLayout
 		android:id="@+id/control_grid"
 		android:layout_width="match_parent"
@@ -24,8 +26,7 @@
 		android:layout_alignParentBottom="true"
 		android:columnCount="4"
 		android:rowCount="4"
-		android:orientation="horizontal"
-		tools:context=".GridXMLActivity" >
+		android:orientation="horizontal">
 
 		<com.example.m.divis.TextViewWithFont
 			style="@style/GridTextView"
@@ -98,6 +99,13 @@
 			android:layout_columnSpan="2"
 			android:text="0" />
 
+	<!--/android.support.v7.widget.GridLayout-->
 	</GridLayout>
+
+	<ImageView
+		android:id="@+id/canvas"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:layout_weight="1" />
 
 </RelativeLayout>

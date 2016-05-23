@@ -35,6 +35,7 @@
 	<style name="GridTextView" parent="MyTextView">
 		<!-- FIXME: over min sdk level -->
 		<item name="android:layout_columnWeight">1</item>
+		<item name="android:layout_gravity">fill_horizontal</item>
 	</style>
 
 	<style name="MySpinner" parent="MyTextView">
@@ -44,13 +45,12 @@
 	<style name="GridSpinner" parent="MySpinner">
 		<!-- FIXME: over min sdk level -->
 		<item name="android:layout_columnWeight">1</item>
+		<item name="android:layout_gravity">fill_horizontal</item>
 	</style>
 
 	<style name="MySpinnerTextView">
 		<item name="android:layout_width">match_parent</item>
 		<item name="android:layout_height">wrap_content</item>
-		<!-- FIXME: over min sdk level -->
-		<!--item name="android:fontFamily">Calibri</item-->
 		<item name="android:textColor">@color/colorTextPrimary</item>
 		<!--item name="android:textSize">@android:style/TextAppearance.Medium</item-->
 		<item name="android:textSize">18sp</item>

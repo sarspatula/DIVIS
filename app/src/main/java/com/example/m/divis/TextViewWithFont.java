@@ -46,18 +46,18 @@ import java.util.List;
 
 public class TextViewWithFont extends TextView {
 
-    public TextViewWithFont(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        this.setTypeface(MainActivity.typeface);
-    }
+	public TextViewWithFont(Context context, AttributeSet attrs) {
+		super(context, attrs);
+		this.setTypeface(MainActivity.typeface);
+	}
 
-    public TextViewWithFont(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        this.setTypeface(MainActivity.typeface);
-    }
+	public TextViewWithFont(Context context, AttributeSet attrs, int defStyle) {
+		super(context, attrs, defStyle);
+		this.setTypeface(MainActivity.typeface);
+	}
 
-    public TextViewWithFont(Context context) {
-        super(context);
-        this.setTypeface(MainActivity.typeface);
-    }
+	public TextViewWithFont(Context context) {
+		super(context);
+		this.setTypeface(MainActivity.typeface);
+	}
 }

@@ -3,6 +3,13 @@ package com.example.m.divis;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
 import android.hardware.Camera;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -17,6 +24,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -32,6 +40,8 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
+import android.widget.GridLayout;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,273 +55,318 @@ import java.util.Date;
 import java.util.List;
 
 public class FragmentCalibrate extends Fragment {
+	private static final String TAG = "DVISFragmentCalibrate";
 	private static final int MY_PERMISSIONS_REQUEST_CAMERA = 42;
 
-    // Native camera.
-    private Camera mCamera;
+	private ShapeDrawable mUpperShape;
+	private ShapeDrawable mLowerShape;
+	private LayerDrawable mLayerDrawable;
 
-    // View to display the camera output.
-    private CameraPreview mPreview;
+	private int strokeWidth = 5;
+	private int strokeColor = Color.rgb(255,255,255);
+	private Point mLowerCenter;
+	private Point mUpperCenter;
+	private int mLowerRadius = 100;
+	private int mUpperRadius = 100;
 
-    // Reference to the containing view.
-    private View mCameraView;
+	// Native camera.
+	private Camera mCamera;
+
+	// size of image captured by camera, set to largest available
+	private Camera.Size mCaptureSize;
+	// adjusted by device orientation
+	private int mCaptureWidth;
+	private int mCaptureHeight;
+
+	// View to display the camera output.
+	private CameraPreview mPreview;
+
+	// Reference to the containing view.
+	private View mCameraView;
 
 	private Spinner mCameraExposure;
 
-    class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
+	// control shapes will be drawn on this view
+	private ImageView mCanvas;
 
-        // SurfaceHolder
-        private SurfaceHolder mHolder;
+	class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 
-        // Our Camera.
-        private Camera mCamera;
+		// SurfaceHolder
+		private SurfaceHolder mHolder;
 
-        // Parent Context.
-        private Context mContext;
+		// Our Camera.
+		private Camera mCamera;
 
-        // Camera Sizing (For rotation, orientation changes)
-        private Camera.Size mPreviewSize;
+		// Parent Context.
+		private Context mContext;
 
-        // List of supported preview sizes
-        private List<Camera.Size> mSupportedPreviewSizes;
+		// Camera Sizing (For rotation, orientation changes)
+		private Camera.Size mPreviewSize;
 
-        // Flash modes supported by this camera
-        private List<String> mSupportedFlashModes;
+		// List of supported preview sizes
+		private List<Camera.Size> mSupportedPreviewSizes;
 
-        // View holding this camera.
-        private View mCameraView;
+		// Flash modes supported by this camera
+		private List<String> mSupportedFlashModes;
 
-        public CameraPreview(Context context, Camera camera, View cameraView) {
-            super(context);
+		// View holding this camera.
+		private View mCameraView;
 
-            // Capture the context
-            mCameraView = cameraView;
-            mContext = context;
-            setCamera(camera);
+		public CameraPreview(Context context, Camera camera, View cameraView) {
+			super(context);
 
-            // Install a SurfaceHolder.Callback so we get notified when the
-            // underlying surface is created and destroyed.
-            mHolder = getHolder();
-            mHolder.addCallback(this);
-            mHolder.setKeepScreenOn(true);
-            // deprecated setting, but required on Android versions prior to 3.0
-            mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        }
+			// Capture the context
+			mCameraView = cameraView;
+			mContext = context;
+			setCamera(camera);
 
-        /**
-         * Begin the preview of the camera input.
-         */
-        public void startCameraPreview()
-        {
-            try{
-                mCamera.setPreviewDisplay(mHolder);
-                mCamera.startPreview();
-            }
-            catch(Exception e){
-                e.printStackTrace();
-            }
-        }
+			// Install a SurfaceHolder.Callback so we get notified when the
+			// underlying surface is created and destroyed.
+			mHolder = getHolder();
+			mHolder.addCallback(this);
+			mHolder.setKeepScreenOn(true);
+			// deprecated setting, but required on Android versions prior to 3.0
+			mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+		}
 
-        /**
-         * Extract supported preview and flash modes from the camera.
-         * @param camera
-         */
-        private void setCamera(Camera camera)
-        {
-            // Source: http://stackoverflow.com/questions/7942378/android-camera-will-not-work-startpreview-fails
-            mCamera = camera;
-            mSupportedPreviewSizes = mCamera.getParameters().getSupportedPreviewSizes();
-            mSupportedFlashModes = mCamera.getParameters().getSupportedFlashModes();
+		/**
+		 * Begin the preview of the camera input.
+		 */
+		public void startCameraPreview()
+		{
+			try{
+				mCamera.setPreviewDisplay(mHolder);
+				mCamera.startPreview();
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}
+		}
 
-            // Set the camera to Auto Flash mode.
-            if (mSupportedFlashModes != null && mSupportedFlashModes.contains(Camera.Parameters.FLASH_MODE_AUTO)){
-                Camera.Parameters parameters = mCamera.getParameters();
-                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
-                mCamera.setParameters(parameters);
-            }
+		/**
+		 * Extract supported preview and flash modes from the camera.
+		 * @param camera
+		 */
+		private void setCamera(Camera camera)
+		{
+			// Source: http://stackoverflow.com/questions/7942378/android-camera-will-not-work-startpreview-fails
+			mCamera = camera;
+			mSupportedPreviewSizes = mCamera.getParameters().getSupportedPreviewSizes();
+			mSupportedFlashModes = mCamera.getParameters().getSupportedFlashModes();
 
-            requestLayout();
-        }
+			// Set the camera to Auto Flash mode.
+			if (mSupportedFlashModes != null && mSupportedFlashModes.contains(Camera.Parameters.FLASH_MODE_AUTO)){
+				Camera.Parameters parameters = mCamera.getParameters();
+				parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
+				mCamera.setParameters(parameters);
+			}
 
-        /**
-         * The Surface has been created, now tell the camera where to draw the preview.
-         * @param holder
-         */
-        public void surfaceCreated(SurfaceHolder holder) {
-            try {
-                mCamera.setPreviewDisplay(holder);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+			requestLayout();
+		}
 
-        /**
-         * Dispose of the camera preview.
-         * @param holder
-         */
-        public void surfaceDestroyed(SurfaceHolder holder) {
-            if (mCamera != null){
-                mCamera.stopPreview();
-            }
-        }
+		/**
+		 * The Surface has been created, now tell the camera where to draw the preview.
+		 * @param holder
+		 */
+		public void surfaceCreated(SurfaceHolder holder) {
+			try {
+				mCamera.setPreviewDisplay(holder);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 
-        /**
-         * React to surface changed events
-         * @param holder
-         * @param format
-         * @param w
-         * @param h
-         */
-        public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
-            // If your preview can change or rotate, take care of those events here.
-            // Make sure to stop the preview before resizing or reformatting it.
+		/**
+		 * Dispose of the camera preview.
+		 * @param holder
+		 */
+		public void surfaceDestroyed(SurfaceHolder holder) {
+			if (mCamera != null){
+				mCamera.stopPreview();
+			}
+		}
 
-            if (mHolder.getSurface() == null){
-                // preview surface does not exist
-                return;
-            }
+		/**
+		 * React to surface changed events
+		 * @param holder
+		 * @param format
+		 * @param w
+		 * @param h
+		 */
+		public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
+			// If your preview can change or rotate, take care of those events here.
+			// Make sure to stop the preview before resizing or reformatting it.
 
-            // stop preview before making changes
-            try {
-                Camera.Parameters parameters = mCamera.getParameters();
+			if (mHolder.getSurface() == null){
+				// preview surface does not exist
+				return;
+			}
 
-                // Set the auto-focus mode to "continuous"
-                parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+			// stop preview before making changes
+			try {
+				Camera.Parameters parameters = mCamera.getParameters();
 
-                // Preview size must exist.
-                if(mPreviewSize != null) {
-                    Camera.Size previewSize = mPreviewSize;
-                    parameters.setPreviewSize(previewSize.width, previewSize.height);
-                }
+				// Set the auto-focus mode to "continuous"
+				parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
 
-                mCamera.setParameters(parameters);
-                mCamera.startPreview();
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-        }
+				// Preview size must exist.
+				if(mPreviewSize != null) {
+					Camera.Size previewSize = mPreviewSize;
+					parameters.setPreviewSize(previewSize.width, previewSize.height);
+				}
 
-        /**
-         * Calculate the measurements of the layout
-         * @param widthMeasureSpec
-         * @param heightMeasureSpec
-         */
-        @Override
-        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
-        {
-            // Source: http://stackoverflow.com/questions/7942378/android-camera-will-not-work-startpreview-fails
-            final int width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
-            final int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
-            setMeasuredDimension(width, height);
+				mCamera.setParameters(parameters);
+				mCamera.startPreview();
+			} catch (Exception e){
+				e.printStackTrace();
+			}
+		}
 
-            if (mSupportedPreviewSizes != null){
-                mPreviewSize = getOptimalPreviewSize(mSupportedPreviewSizes, width, height);
-            }
-        }
+		/**
+		 * Calculate the measurements of the layout
+		 * @param widthMeasureSpec
+		 * @param heightMeasureSpec
+		 */
+		@Override
+		protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		{
+			// Source: http://stackoverflow.com/questions/7942378/android-camera-will-not-work-startpreview-fails
+			final int width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
+			final int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
+			Log.d(TAG, "Preview View's Size: " + width + "x" + height);
+			setMeasuredDimension(width, height);
 
-        /**
-         * Update the layout based on rotation and orientation changes.
-         * @param changed
-         * @param left
-         * @param top
-         * @param right
-         * @param bottom
-         */
-        @Override
-        protected void onLayout(boolean changed, int left, int top, int right, int bottom)
-        {
-            // Source: http://stackoverflow.com/questions/7942378/android-camera-will-not-work-startpreview-fails
-            if (changed) {
-                final int width = right - left;
-                final int height = bottom - top;
+			if (mSupportedPreviewSizes != null){
+				mPreviewSize = getOptimalPreviewSize(mSupportedPreviewSizes, width, height);
+				if(mPreviewSize != null)
+					Log.d(TAG, "Optimal Preview Size: " + mPreviewSize.width + "x" + mPreviewSize.height);
+			}
+		}
 
-                int previewWidth = width;
-                int previewHeight = height;
+		/**
+		 * Update the layout based on rotation and orientation changes.
+		 * @param changed
+		 * @param left
+		 * @param top
+		 * @param right
+		 * @param bottom
+		 */
+		@Override
+		protected void onLayout(boolean changed, int left, int top, int right, int bottom)
+		{
+			// Source: http://stackoverflow.com/questions/7942378/android-camera-will-not-work-startpreview-fails
+			if (changed) {
+				final int width = right - left;
+				final int height = bottom - top;
 
-                if (mPreviewSize != null){
-                    Display display = ((WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+				int previewWidth = width;
+				int previewHeight = height;
 
-                    switch (display.getRotation())
-                    {
-                        case Surface.ROTATION_0:
-                            previewWidth = mPreviewSize.height;
-                            previewHeight = mPreviewSize.width;
-                            mCamera.setDisplayOrientation(90);
-                            break;
-                        case Surface.ROTATION_90:
-                            previewWidth = mPreviewSize.width;
-                            previewHeight = mPreviewSize.height;
-                            break;
-                        case Surface.ROTATION_180:
-                            previewWidth = mPreviewSize.height;
-                            previewHeight = mPreviewSize.width;
-                            break;
-                        case Surface.ROTATION_270:
-                            previewWidth = mPreviewSize.width;
-                            previewHeight = mPreviewSize.height;
-                            mCamera.setDisplayOrientation(180);
-                            break;
-                    }
-                }
+				if (mPreviewSize != null){
+					Display display = ((WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 
-                final int scaledChildHeight = previewHeight * width / previewWidth;
-                mCameraView.layout(0, height - scaledChildHeight, width, height);
-            }
-        }
+					switch (display.getRotation())
+					{
+						case Surface.ROTATION_0:
+							previewWidth = mPreviewSize.height;
+							previewHeight = mPreviewSize.width;
+							mCamera.setDisplayOrientation(90);
+							break;
+						case Surface.ROTATION_90:
+							previewWidth = mPreviewSize.width;
+							previewHeight = mPreviewSize.height;
+							break;
+						case Surface.ROTATION_180:
+							previewWidth = mPreviewSize.height;
+							previewHeight = mPreviewSize.width;
+							break;
+						case Surface.ROTATION_270:
+							previewWidth = mPreviewSize.width;
+							previewHeight = mPreviewSize.height;
+							mCamera.setDisplayOrientation(180);
+							break;
+					}
+					Log.d(TAG, "Preview Size (rot): " + previewWidth + "x" + previewHeight);
+				}
 
-        /**
-         *
-         * @param sizes
-         * @param width
-         * @param height
-         * @return
-         */
-        private Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int width, int height)
-        {
-            // Source: http://stackoverflow.com/questions/7942378/android-camera-will-not-work-startpreview-fails
-            Camera.Size optimalSize = null;
+				final int scaledChildHeight = previewHeight * width / previewWidth;
+				mCameraView.layout(0, height - scaledChildHeight, width, height);
+			}
+		}
 
-            final double ASPECT_TOLERANCE = 0.1;
-            double targetRatio = (double) height / width;
+		/**
+		 *
+		 * @param sizes
+		 * @param width
+		 * @param height
+		 * @return
+		 */
+		private Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int width, int height)
+		{
+			// Source: http://stackoverflow.com/questions/7942378/android-camera-will-not-work-startpreview-fails
+			Camera.Size optimalSize = null;
 
-            // Try to find a size match which suits the whole screen minus the menu on the left.
-            for (Camera.Size size : sizes){
+			final double ASPECT_TOLERANCE = 0.1;
+			double targetRatio = (double) height / width;
 
-                if (size.height != width) continue;
-                double ratio = (double) size.width / size.height;
-                if (ratio <= targetRatio + ASPECT_TOLERANCE && ratio >= targetRatio - ASPECT_TOLERANCE){
-                    optimalSize = size;
-                }
-            }
+			// Try to find a size match which suits the whole screen minus the menu on the left.
+			for (Camera.Size size : sizes){
 
-            // If we cannot find the one that matches the aspect ratio, ignore the requirement.
-            if (optimalSize == null) {
-                // TODO : Backup in case we don't get a size.
-            }
+				if (size.height != width) continue;
+				double ratio = (double) size.width / size.height;
+				if (ratio <= targetRatio + ASPECT_TOLERANCE && ratio >= targetRatio - ASPECT_TOLERANCE){
+					optimalSize = size;
+				}
+			}
 
-            return optimalSize;
-        }
-    }
+			// If we cannot find the one that matches the aspect ratio, ignore the requirement.
+			if (optimalSize == null) {
+				// TODO : Backup in case we don't get a size.
+			}
+
+			return optimalSize;
+		}
+	}
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment_calibrate, container, false);
 		mCameraView = v;
 		mCameraExposure = (Spinner)v.findViewById(R.id.camera_exposure);
+		mCanvas = (ImageView)v.findViewById(R.id.canvas);
+
+		// GridLayout's weight support requires android 5.0+
+		// workaround that for older devices
+		GridLayout.LayoutParams lparams = (GridLayout.LayoutParams)mCameraExposure.getLayoutParams();
+		DisplayMetrics displaymetrics = new DisplayMetrics();
+		getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+		int width = displaymetrics.widthPixels;
+		lparams.width = width/2;
+		mCameraExposure.setLayoutParams(lparams);
+		Log.d(TAG, "SET WIDTH " + Float.toString(width/2));
+
+		GridLayout grid = (GridLayout)v.findViewById(R.id.control_grid);
+		for (int i = grid.getChildCount() - 3; i >= 0; i--) {
+			final View child = grid.getChildAt(i);
+			lparams = (GridLayout.LayoutParams)child.getLayoutParams();
+			lparams.width = width/4;
+			child.setLayoutParams(lparams);
+		}
 
 		setupCamera();
 		setupCameraExposureSpinner();
+		setupControlShapes();
 		return v;
 	}
 
 	void setupCamera()
 	{
 		int permissionCheck = ContextCompat.checkSelfPermission(getActivity(),
-        		Manifest.permission.CAMERA);
+				Manifest.permission.CAMERA);
 		if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
 			boolean opened = safeCameraOpenInView();
 			if(!opened) {
-				Log.d("DIVIS", "Error, Camera failed to open");
+				Log.d(TAG, "Error, Camera failed to open");
 			}
 		} else {
 			// Should we show an explanation?
@@ -340,7 +395,7 @@ public class FragmentCalibrate extends Fragment {
 	void setupCameraExposureSpinner()
 	{
 		if(mCamera == null) {
-			Log.d("DIVIS", "Error, setupCameraExposureSpinner: camera not opened");
+			Log.d(TAG, "Error, setupCameraExposureSpinner: camera not opened");
 			return;
 		}
 
@@ -360,21 +415,81 @@ public class FragmentCalibrate extends Fragment {
 		mCameraExposure.setSelection(current - min);
 
 		mCameraExposure.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 				Camera.Parameters params = mCamera.getParameters();
 				int min = params.getMinExposureCompensation();
 				int idx = position + min;
 				params.setExposureCompensation(idx);
 				mCamera.setParameters(params);
-            }
+			}
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
 
-               // sometimes you need nothing here
-            }
-        });
+			   // sometimes you need nothing here
+			}
+		});
+	}
+
+	void setupControlShapes()
+	{
+		// TODO: fail gracefully if camera failed to open
+
+		mUpperShape = new ShapeDrawable(new OvalShape());
+		mLowerShape = new ShapeDrawable(new OvalShape());
+
+		mUpperShape.getPaint().setStrokeWidth(strokeWidth);
+		mUpperShape.getPaint().setAntiAlias(true);
+		mUpperShape.getPaint().setColor(strokeColor);
+		mUpperShape.getPaint().setStyle(Paint.Style.STROKE);
+
+		mLowerShape.getPaint().setStrokeWidth(strokeWidth);
+		mLowerShape.getPaint().setAntiAlias(true);
+		mLowerShape.getPaint().setColor(strokeColor);
+		mLowerShape.getPaint().setStyle(Paint.Style.STROKE);
+
+		// ensure drawable size matches image capture size
+		ShapeDrawable blank_drawable = new ShapeDrawable();
+		blank_drawable.setIntrinsicWidth(mCaptureSize.width);
+		blank_drawable.setIntrinsicHeight(mCaptureSize.height);
+		blank_drawable.getPaint().setStrokeWidth(0);
+		blank_drawable.getPaint().setColor(Color.argb(0,0,0,0));
+		blank_drawable.getPaint().setStyle(Paint.Style.STROKE);
+
+		Drawable[] drawlist = new Drawable[3];
+		drawlist[0] = blank_drawable;
+		drawlist[1] = mUpperShape;
+		drawlist[2] = mLowerShape;
+		mLayerDrawable = new LayerDrawable(drawlist);
+
+		// TODO: restore last settings
+		mUpperCenter = new Point(100, 150);
+		mLowerCenter = new Point(350, 150);
+
+		// blank drawable, size matched to image capture.  TODO: needed?
+//		mLayerDrawable.setLayerSize(0, mCaptureSize.width, mCaptureSize.height);
+
+		// upper
+		mLayerDrawable.setLayerInset(1,
+				mUpperCenter.x - mUpperRadius, // left
+				mUpperCenter.y - mUpperRadius, // top
+				mCaptureWidth - (mUpperCenter.x + mUpperRadius), // right
+				mCaptureHeight - (mUpperCenter.y + mUpperRadius)); // bottom
+
+		// lower
+		mLayerDrawable.setLayerInset(2,
+				mLowerCenter.x - mLowerRadius, // left
+				mLowerCenter.y - mLowerRadius, // top
+				mCaptureWidth - (mLowerCenter.x + mLowerRadius), // right
+				mCaptureHeight - (mLowerCenter.y + mLowerRadius)); // bottom
+
+		mCanvas.setImageDrawable(mLayerDrawable);
+		mCanvas.setScaleType(ImageView.ScaleType.FIT_XY);
+	}
+
+	void updateDrawables()
+	{
 	}
 
 	@Override
@@ -388,7 +503,7 @@ public class FragmentCalibrate extends Fragment {
 
 					boolean opened = safeCameraOpenInView();
 					if(!opened) {
-						Log.d("DIVIS", "Error, failed to open Camera");
+						Log.d(TAG, "Error, failed to open Camera");
 					}
 				} else {
 
@@ -403,60 +518,89 @@ public class FragmentCalibrate extends Fragment {
 		}
 	}
 
-    private boolean safeCameraOpenInView() {
-        boolean qOpened = false;
-        releaseCameraAndPreview();
-        mCamera = getCameraInstance();
-        qOpened = (mCamera != null);
+	private boolean safeCameraOpenInView() {
+		boolean qOpened = false;
+		releaseCameraAndPreview();
+		mCamera = getCameraInstance();
+		qOpened = (mCamera != null);
 
-		Log.d("DIVIS", "INFO, qOpened==" + qOpened);
+		Log.d(TAG, "INFO, qOpened==" + qOpened);
 
-        if(qOpened == true){
-            mPreview = new CameraPreview(getActivity().getBaseContext(), mCamera, mCameraView);
-            FrameLayout preview = (FrameLayout) mCameraView.findViewById(R.id.camera_view);
-            preview.addView(mPreview);
-            mPreview.startCameraPreview();
-        }
-        return qOpened;
-    }
+		if(qOpened == true){
+			// setup preview
+			mPreview = new CameraPreview(getActivity().getBaseContext(), mCamera, mCameraView);
+			FrameLayout preview = (FrameLayout) mCameraView.findViewById(R.id.camera_view);
+			preview.addView(mPreview);
+			mPreview.startCameraPreview();
 
-    /**
-     * Safe method for getting a camera instance.
-     * @return
-     */
-    public static Camera getCameraInstance(){
-        Camera c = null;
-		Log.d("DIVIS", "INFO, <getCameraInstance>");
-        try {
+			// determine largest capture size available
+			Camera.Parameters params = mCamera.getParameters();
+			List<Camera.Size> capture_sizes = params.getSupportedPictureSizes();
+			int idx_of_largest = 0;
+			for(int i=0; i<capture_sizes.size(); i++) {
+				Log.d(TAG, "Capture Size: " + capture_sizes.get(i).width + "x" + capture_sizes.get(i).height);
+				if(capture_sizes.get(idx_of_largest).height < capture_sizes.get(i).height)
+					idx_of_largest = i;
+			}
+			mCaptureSize = capture_sizes.get(idx_of_largest);
+
+			// adjust by orientation
+			Display display = ((WindowManager)getActivity().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+			switch (display.getRotation()) {
+			case Surface.ROTATION_0:
+			case Surface.ROTATION_180:
+				mCaptureWidth = mCaptureSize.height;
+				mCaptureHeight = mCaptureSize.width;
+				break;
+			default:
+				mCaptureWidth = mCaptureSize.width;
+				mCaptureHeight = mCaptureSize.height;
+				break;
+			}
+
+			Log.d(TAG, "Capture Size Set To " + mCaptureSize.width + "x" + mCaptureSize.height);
+			Log.d(TAG, "Capture Size (rot): " + mCaptureWidth + "x" + mCaptureHeight);
+		}
+		return qOpened;
+	}
+
+	/**
+	 * Safe method for getting a camera instance.
+	 * @return
+	 */
+	public static Camera getCameraInstance(){
+		Camera c = null;
+		Log.d(TAG, "INFO, <getCameraInstance>");
+		try {
 			int n = Camera.getNumberOfCameras();
 			if(n > 0)
 				c = Camera.open(0); // attempt to get a Camera instance
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-		Log.d("DIVIS", "INFO, </getCameraInstance> " + c);
-        return c; // returns null if camera is unavailable
-    }
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+		Log.d(TAG, "INFO, </getCameraInstance> " + c);
+		return c; // returns null if camera is unavailable
+	}
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        releaseCameraAndPreview();
-    }
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		releaseCameraAndPreview();
+	}
 
-    /**
-     * Clear any existing preview / camera.
-     */
-    private void releaseCameraAndPreview() {
+	/**
+	 * Clear any existing preview / camera.
+	 */
+	private void releaseCameraAndPreview() {
 
-        if (mCamera != null) {
-            mCamera.stopPreview();
-            mCamera.release();
-            mCamera = null;
-        }
-        if(mPreview != null){
-            mPreview.destroyDrawingCache();
-            mPreview.mCamera = null;
-        }
-    }
+		if (mCamera != null) {
+			mCamera.stopPreview();
+			mCamera.release();
+			mCamera = null;
+		}
+		if(mPreview != null){
+			mPreview.destroyDrawingCache();
+			mPreview.mCamera = null;
+		}
+	}
 }
