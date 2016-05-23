@@ -12,6 +12,7 @@ DIY ready hardward plans + app are currently under development. Check back soon.
 
 SPECIFIC SUCCESS CRITERIA
 * < $100 to build and deploy
+* < $10 salvage/blackmarket value
 * < $100 / yr to operate/maintain
 * > 6 months in water with no maintenance
 * < 3 feet (1 meter) margin of error thoughout a deployment
