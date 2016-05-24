@@ -102,12 +102,24 @@
 	<!--/android.support.v7.widget.GridLayout-->
 	</GridLayout>
 
+	<!--com.example.m.divis.DrawView
+		android:id="@+id/canvas2"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:layout_alignParentTop="true"
+		android:layout_alignParentBottom="true" /-->
+
 	<ImageView
 		android:id="@+id/canvas"
-		android:background="#2f00"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:layout_alignParentTop="true"
 		android:layout_alignParentBottom="true" />
+
+	<!--View
+		android:id="@+id/upper_circle"
+		android:background="@drawable/circle"
+		android:layout_width="200px"
+		android:layout_height="200px" /-->
 
 </RelativeLayout>

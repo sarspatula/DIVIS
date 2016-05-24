@@ -3,11 +3,14 @@ package com.example.m.divis;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ShapeDrawable;
@@ -85,7 +88,8 @@ public class FragmentCalibrate extends Fragment {
 	private View mCameraView;
 
 	// control shapes will be drawn on this view
-	private ImageView mCanvas;
+	private ImageView mDrawingImageView;
+	private Bitmap mDrawingBitmap;
 
 	// controls overlay
 	private EditText mEditUpperX;
@@ -419,20 +423,20 @@ public class FragmentCalibrate extends Fragment {
 
 	// Transform coordinates from screen to that of the imageview's drawable
 	public PointF transformCoordTouchToBitmap(float x, float y) {
-		Drawable d = mCanvas.getDrawable();
+		Drawable d = mDrawingImageView.getDrawable();
 
-		float percentX = x / mCanvas.getWidth();
-		float percentY = y / mCanvas.getHeight();
+		float percentX = x / mDrawingImageView.getWidth();
+		float percentY = y / mDrawingImageView.getHeight();
 
 		float coordX = percentX * mCaptureWidth;
 		float coordY = percentY * mCaptureHeight;
 /*
-//		float finalX = origW / mCanvas.getWidth();
-//		float finalY = origH / mCanvas.getHeight();
-		float finalX = x / mCanvas.getWidth() * origW;
-		float finalY = y / mCanvas.getHeight() * origH;
+//		float finalX = origW / mDrawingImageView.getWidth();
+//		float finalY = origH / mDrawingImageView.getHeight();
+		float finalX = x / mDrawingImageView.getWidth() * origW;
+		float finalY = y / mDrawingImageView.getHeight() * origH;
 */
-//		Log.d(TAG, "COORDS: " + origW + "x" + origH + " : " + mCanvas.getWidth() + "x" + mCanvas.getHeight());
+//		Log.d(TAG, "COORDS: " + origW + "x" + origH + " : " + mDrawingImageView.getWidth() + "x" + mDrawingImageView.getHeight());
 
 //		return new PointF(finalX , finalY);
 		return new PointF(coordX , coordY);
@@ -451,8 +455,8 @@ public class FragmentCalibrate extends Fragment {
 		mEditLowerSize = (EditText)v.findViewById(R.id.lower_size);
 		mCameraExposure = (Spinner)v.findViewById(R.id.camera_exposure);
 
-		mCanvas = (ImageView)v.findViewById(R.id.canvas);
-		mCanvas.setOnTouchListener(new MyOnTouchListener());
+		mDrawingImageView = (ImageView)v.findViewById(R.id.canvas);
+		mDrawingImageView.setOnTouchListener(new MyOnTouchListener());
 
 		// GridLayout's weight support requires android 5.0+
 		// workaround that for older devices
@@ -614,9 +618,27 @@ public class FragmentCalibrate extends Fragment {
 		Log.d(TAG, "shape width upper: " + mUpperShape.drawable.getIntrinsicWidth());
 		Log.d(TAG, "shape width lower: " + mLowerShape.drawable.getIntrinsicWidth());
 
-		mCanvas.setImageDrawable(mLayerDrawable);
-		mCanvas.setScaleType(ImageView.ScaleType.FIT_XY);
-		mCanvas.invalidate();
+		mDrawingImageView.setScaleType(ImageView.ScaleType.FIT_XY);
+		mDrawingImageView.invalidate();
+
+		mDrawingBitmap.eraseColor(Color.argb(0,0,0,0));
+		Canvas c = new Canvas(mDrawingBitmap);
+
+		mUpperShape.drawable.setBounds(
+				mUpperShape.center.x - mUpperShape.radius, // left
+				mUpperShape.center.y - mUpperShape.radius, // top
+				mUpperShape.center.x + mUpperShape.radius, // right
+				mUpperShape.center.y + mUpperShape.radius); // bottom
+		mUpperShape.drawable.draw(c);
+
+		mLowerShape.drawable.setBounds(
+				mLowerShape.center.x - mLowerShape.radius, // left
+				mLowerShape.center.y - mLowerShape.radius, // top
+				mLowerShape.center.x + mLowerShape.radius, // right
+				mLowerShape.center.y + mLowerShape.radius); // bottom
+		mLowerShape.drawable.draw(c);
+
+		mDrawingImageView.setImageDrawable(new BitmapDrawable(getResources(), mDrawingBitmap));
 
 		// update ui
 		mEditUpperX.setText(Integer.toString(mUpperShape.center.x));
@@ -635,6 +657,8 @@ public class FragmentCalibrate extends Fragment {
 
 		mUpperShape = new Shape();
 		mLowerShape = new Shape();
+
+		mDrawingBitmap = Bitmap.createBitmap(mCaptureWidth, mCaptureHeight, Bitmap.Config.ARGB_8888);
 
 		// ensure drawable size matches image capture size
 		ShapeDrawable blank_drawable = new ShapeDrawable();
