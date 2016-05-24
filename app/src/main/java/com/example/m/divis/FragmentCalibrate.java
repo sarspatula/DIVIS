@@ -471,7 +471,7 @@ public class FragmentCalibrate extends Fragment {
 		int width = displaymetrics.widthPixels;
 		lparams.width = width/2;
 		mCameraExposure.setLayoutParams(lparams);
-		Log.d(TAG, "SET WIDTH " + Float.toString(width/2));
+//		Log.d(TAG, "SET WIDTH " + Float.toString(width/2));
 
 		GridLayout grid = (GridLayout)v.findViewById(R.id.control_grid);
 		for (int i = grid.getChildCount() - 3; i >= 0; i--) {

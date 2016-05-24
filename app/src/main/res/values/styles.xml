@@ -39,8 +39,7 @@
 	</style>
 
 	<style name="GridTextViewBordered" parent="GridTextView">
-		<item name="android:paddingTop">12dp</item>
-		<item name="android:paddingBottom">12dp</item>
+		<item name="android:padding">12dp</item>
 		<item name="android:background">@drawable/bordered_background</item>
 	</style>
 

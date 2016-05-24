@@ -6,6 +6,17 @@
     <string name="title_calibrate">Calibrate</string>
     <string name="title_data">Data</string>
 
+	<!-- Settings screen -->
+	<string name="settings_device_id">device_id</string>
+	<string name="settings_divis_id">divis_id</string>
+	<string name="settings_app_version">app_version</string>
+	<string name="settings_location_id">location_id</string>
+	<string name="settings_location_name">location_name</string>
+	<string name="settings_location_detail">location_detail</string>
+	<string name="settings_upper_sensor_depth">upper_Sensor_Depth (in)</string>
+	<string name="settings_lower_sensor_depth">lower_Sensor_Depth (in)</string>
+	<string name="settings_data_refresh_rate">data_refresh_rate</string>
+
 	<!-- Calibrate screen -->
     <string name="calibrate_x">X</string>
     <string name="calibrate_y">Y</string>
