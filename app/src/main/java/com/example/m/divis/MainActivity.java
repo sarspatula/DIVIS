@@ -237,13 +237,13 @@ public class MainActivity extends AppCompatActivity {
 			// capture settings
 			// Configure image format. RGB_565 is the most common format.
 			List<Integer> formats = params.getSupportedPictureFormats();
-			if (formats.contains(PixelFormat.RGB_565)) {
-				Log.d(TAG, "Picture format: RGB_565");
-				params.setPictureFormat(PixelFormat.RGB_565);
-			} else {
-				Log.d(TAG, "Picture format: JPEG");
+//			if (formats.contains(PixelFormat.RGB_565)) {
+//				Log.d(TAG, "Picture format: RGB_565");
+//				params.setPictureFormat(PixelFormat.RGB_565);
+//			} else {
+//				Log.d(TAG, "Picture format: JPEG");
 				params.setPictureFormat(PixelFormat.JPEG);
-			}
+//			}
 			params.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
 			mCamera.setParameters(params);
 		}

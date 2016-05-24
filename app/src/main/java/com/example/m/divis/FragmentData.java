@@ -1,5 +1,8 @@
 package com.example.m.divis;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.hardware.Camera;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
@@ -23,6 +26,8 @@ import android.view.ViewGroup;
   
 import android.widget.TextView;
 
+import java.io.InputStream;
+
 public class FragmentData extends Fragment {
 	private static final String TAG = "DIVISFragmentData";
 
@@ -38,8 +43,13 @@ public class FragmentData extends Fragment {
 
 		@Override
 		public void onPictureTaken(byte[] data, Camera camera) {
+			/*
 			Log.d(TAG, "onPictureTaken (Raw)");
+			if(data == null) {
+				Log.d(TAG, "ERROR, Raw picture data is not available!");
+			}
 			// manipulate uncompressed image data
+			*/
 		}
 	}
 
@@ -49,6 +59,21 @@ public class FragmentData extends Fragment {
 		@Override
 		public void onPictureTaken(byte[] jpeg, Camera camera) {
 			Log.d(TAG, "onPictureTaken (Jpeg)");
+			Bitmap bmp = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.length);
+
+			int w = bmp.getWidth();
+			int h = bmp.getHeight();
+
+			for(int i=0; i<h; i++) {
+				for(int j=0; j<w; j++) {
+					// FIXME
+//					if(pixelWithinArea()) {
+						// TODO
+//					}
+					// TODO: again for lower
+				}
+			}
+
 			// takePicture has finished, now safe to resume the preview
 			MainActivity act = (MainActivity)getActivity();
 			act.mCamera.startPreview();
@@ -62,7 +87,7 @@ public class FragmentData extends Fragment {
 		@Override
 		public void run() {
 			MainActivity act = (MainActivity)getActivity();
-			if(act.mCamera != null) {
+			if(act.mCamera != null && act.mViewPager.getCurrentItem() == 2) {
 				SurfaceView preview = ((FragmentCalibrate)act.mSectionsPagerAdapter.getItem(1)).mPreview;
 				// callbacks: shutter, raw, post view, jpeg
 				Log.d(TAG, "Taking a picture!");
@@ -94,5 +119,15 @@ public class FragmentData extends Fragment {
 	void setupTimer()
 	{
 		timerHandler.postDelayed(timerRunnable, 1000);
+	}
+
+	boolean pixelWithinArea(Point center, int radius, Point px)
+	{
+		int dx = center.x - px.x;
+		int dy = center.y - px.y;
+		int dist = (int)Math.floor(Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)));
+		if(dist > radius)
+			return false;
+		return true;
 	}
 }
