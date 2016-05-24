@@ -73,7 +73,7 @@ public class FragmentCalibrate extends Fragment {
 	private Shape mLowerShape;
 
 	// View to display the camera output.
-	private CameraPreview mPreview;
+	public CameraPreview mPreview;
 
 	// Reference to the containing view.
 	private View mCameraView;
@@ -90,16 +90,6 @@ public class FragmentCalibrate extends Fragment {
 	private EditText mEditLowerY;
 	private EditText mEditLowerSize;
 	private Spinner mCameraExposure;
-
-	// capture timer
-	long timerInterval = 1000;
-	Handler timerHandler = new Handler();
-	Runnable timerRunnable = new Runnable() {
-		@Override
-		public void run() {
-			timerHandler.postDelayed(this, timerInterval);
-		}
-	};
 
 	Camera mCamera;
 	int mCaptureWidth;
@@ -498,21 +488,7 @@ public class FragmentCalibrate extends Fragment {
 			// TODO: main activity calls setup?
 		}
 
-		setupTimer();
-
 		return v;
-	}
-
-	@Override
-	public void onPause() {
-		super.onPause();
-		timerHandler.removeCallbacks(timerRunnable);
-	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
-		setupTimer();
 	}
 
 	void setupCameraPreview(Context context)
@@ -806,11 +782,6 @@ public class FragmentCalibrate extends Fragment {
 			@Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
 		});
 		*/
-	}
-
-	void setupTimer()
-	{
-		timerHandler.postDelayed(timerRunnable, 0);
 	}
 
 	@Override

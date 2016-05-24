@@ -3,6 +3,7 @@ package com.example.m.divis;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.PixelFormat;
 import android.graphics.Typeface;
 
 import android.hardware.Camera;
@@ -49,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
 	 * may be best to switch to a
 	 * {@link android.support.v4.app.FragmentStatePagerAdapter}.
 	 */
-	private SectionsPagerAdapter mSectionsPagerAdapter;
+	public SectionsPagerAdapter mSectionsPagerAdapter;
 
 	/**
 	 * The {@link ViewPager} that will host the section contents.
@@ -201,10 +202,11 @@ public class MainActivity extends AppCompatActivity {
 
 		Log.d(TAG, "INFO, qOpened==" + qOpened);
 
-		if(qOpened == true){
+		if(qOpened == true) {
 			// determine largest capture size available
 			Camera.Parameters params = mCamera.getParameters();
 			List<Camera.Size> capture_sizes = params.getSupportedPictureSizes();
+			//mCaptureSize = capture_sizes.get(capture_sizes.size()-1);
 			int idx_of_largest = 0;
 			for(int i=0; i<capture_sizes.size(); i++) {
 				Log.d(TAG, "Capture Size: " + capture_sizes.get(i).width + "x" + capture_sizes.get(i).height);
@@ -227,8 +229,23 @@ public class MainActivity extends AppCompatActivity {
 				break;
 			}
 
+			params.setPictureSize(mCaptureWidth, mCaptureHeight);
+
 			Log.d(TAG, "Capture Size Set To " + mCaptureSize.width + "x" + mCaptureSize.height);
 			Log.d(TAG, "Capture Size (rot): " + mCaptureWidth + "x" + mCaptureHeight);
+
+			// capture settings
+			// Configure image format. RGB_565 is the most common format.
+			List<Integer> formats = params.getSupportedPictureFormats();
+			if (formats.contains(PixelFormat.RGB_565)) {
+				Log.d(TAG, "Picture format: RGB_565");
+				params.setPictureFormat(PixelFormat.RGB_565);
+			} else {
+				Log.d(TAG, "Picture format: JPEG");
+				params.setPictureFormat(PixelFormat.JPEG);
+			}
+			params.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+			mCamera.setParameters(params);
 		}
 		return qOpened;
 	}
