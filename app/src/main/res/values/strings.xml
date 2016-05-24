@@ -5,10 +5,25 @@
     <string name="title_settings">Settings</string>
     <string name="title_calibrate">Calibrate</string>
     <string name="title_data">Data</string>
+
+	<!-- Calibrate screen -->
     <string name="calibrate_x">X</string>
     <string name="calibrate_y">Y</string>
     <string name="calibrate_size">Size</string>
     <string name="calibrate_upper">upper</string>
     <string name="calibrate_lower">lower</string>
     <string name="calibrate_exposure">Camera Exposure</string>
+    <string name="calibrate_min_rgb">Minimum rgb for live pixel</string>
+
+	<!-- Data screen -->
+	<string name="data_column_upper">Upper</string>
+	<string name="data_column_lower">Lower</string>
+	<string name="data_timestamp">date_time</string>
+	<string name="data_secci_depth">secci_depth</string>
+	<string name="data_live_pixels">live_pixels</string>
+	<string name="data_washed_pixels">washed_pixels</string>
+	<string name="data_data_pixels">data_pixels</string>
+	<string name="data_avg_r">avg_r</string>
+	<string name="data_avg_g">avg_g</string>
+	<string name="data_avg_b">avg_b</string>
 </resources>

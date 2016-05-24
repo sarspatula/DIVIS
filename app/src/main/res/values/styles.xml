@@ -38,6 +38,12 @@
 		<item name="android:layout_gravity">fill_horizontal</item>
 	</style>
 
+	<style name="GridTextViewBordered" parent="GridTextView">
+		<item name="android:paddingTop">12dp</item>
+		<item name="android:paddingBottom">12dp</item>
+		<item name="android:background">@drawable/bordered_background</item>
+	</style>
+
 	<style name="MySpinner" parent="MyTextView">
 		<item name="android:popupBackground">@color/colorSecondary</item>
 	</style>
