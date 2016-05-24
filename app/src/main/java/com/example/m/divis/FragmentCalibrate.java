@@ -12,7 +12,6 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.hardware.Camera;
@@ -62,15 +61,12 @@ import java.util.Date;
 import java.util.List;
 
 public class FragmentCalibrate extends Fragment {
-	private static final String TAG = "DVISFragmentCalibrate";
+	private static final String TAG = "DIVISFragmentCalibrate";
 	private static final int MY_PERMISSIONS_REQUEST_CAMERA = 42;
 
 	// class encapsulates drawable, draw style, center, and radius
 	private Shape mUpperShape;
 	private Shape mLowerShape;
-
-	private Drawable[] mDrawList;
-	private LayerDrawable mLayerDrawable;
 
 	// Native camera.
 	private Camera mCamera;
@@ -476,52 +472,50 @@ public class FragmentCalibrate extends Fragment {
 			child.setLayoutParams(lparams);
 		}
 
-		setupCamera();
-		setupCameraExposureSpinner();
-		setupControlShapes();
+		if(setupCamera()) {
+			setupCameraExposureSpinner();
+			setupControlShapes();
+		}
 		return v;
 	}
 
-	void setupCamera()
+	boolean setupCamera()
 	{
+		boolean opened = false;
 		int permissionCheck = ContextCompat.checkSelfPermission(getActivity(),
 				Manifest.permission.CAMERA);
 		if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
-			boolean opened = safeCameraOpenInView();
+			opened = safeCameraOpenInView();
 			if(!opened) {
 				Log.d(TAG, "Error, Camera failed to open");
 			}
 		} else {
-			// Should we show an explanation?
-			if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-					Manifest.permission.CAMERA)) {
-
-				// Show an expanation to the user *asynchronously* -- don't block
-				// this thread waiting for the user's response! After the user
-				// sees the explanation, try again to request the permission.
-
-			} else {
+//			// Should we show an explanation?
+//			if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+//					Manifest.permission.CAMERA)) {
+//
+//				// Show an expanation to the user *asynchronously* -- don't block
+//				// this thread waiting for the user's response! After the user
+//				// sees the explanation, try again to request the permission.
+//
+//			} else {
 
 				// No explanation needed, we can request the permission.
 
-				ActivityCompat.requestPermissions(getActivity(),
+				requestPermissions(
 						new String[]{Manifest.permission.CAMERA},
 						MY_PERMISSIONS_REQUEST_CAMERA);
 
 				// MY_PERMISSIONS_REQUEST_CAMERA is an
 				// app-defined int constant. The callback method gets the
 				// result of the request.
-			}
+//			}
 		}
+		return opened;
 	}
 
 	void setupCameraExposureSpinner()
 	{
-		if(mCamera == null) {
-			Log.d(TAG, "Error, setupCameraExposureSpinner: camera not opened");
-			return;
-		}
-
 		ArrayAdapter<String> adapter = new ArrayAdapter(getActivity(), R.layout.spinner_item);
 		Camera.Parameters params = mCamera.getParameters();
 		int min = params.getMinExposureCompensation();
@@ -578,50 +572,8 @@ public class FragmentCalibrate extends Fragment {
 
 	void updateDrawables()
 	{
-		mDrawList[1] = mUpperShape.update();
-		mDrawList[2] = mLowerShape.update();
-		mLayerDrawable = new LayerDrawable(mDrawList);
-
-		mLayerDrawable.setLayerSize(0, mCaptureWidth, mCaptureHeight);
-
-		// upper
-//		mLayerDrawable.setLayerSize(1, mCaptureWidth, mCaptureHeight);
-		mLayerDrawable.setLayerSize(1, mUpperShape.radius*2, mUpperShape.radius*2);
-		mLayerDrawable.setLayerInset(1,
-				mUpperShape.center.x - mUpperShape.radius, // left
-				mUpperShape.center.y - mUpperShape.radius, // top
-				mCaptureWidth - (mUpperShape.center.x + mUpperShape.radius), // right
-				mCaptureHeight - (mUpperShape.center.y + mUpperShape.radius)); // bottom
-
-//		mLayerDrawable.setLayerSize(1, mUpperShape.radius*2, mUpperShape.radius*2);
-//		mLayerDrawable.setLayerInsetTop(1, 440);
-		/*
-		mLayerDrawable.setLayerInset(1,
-				mUpperShape.center.x - mUpperShape.radius, // left
-				mUpperShape.center.y - mUpperShape.radius, // top
-				0, // right
-				0); // bottom
-		*/
-
-		// lower
-		mLayerDrawable.setLayerSize(2, mCaptureWidth, mCaptureHeight);
-		mLayerDrawable.setLayerInset(2,
-				mLowerShape.center.x - mLowerShape.radius, // left
-				mLowerShape.center.y - mLowerShape.radius, // top
-				mCaptureWidth - (mLowerShape.center.x + mLowerShape.radius), // right
-				mCaptureHeight - (mLowerShape.center.y + mLowerShape.radius)); // bottom
-
-		Log.d(TAG, "layer 0 sz: " + mLayerDrawable.getLayerWidth(0) + "x" + mLayerDrawable.getLayerHeight(0));
-		Log.d(TAG, "layer 1 sz: " + mLayerDrawable.getLayerWidth(1) + "x" + mLayerDrawable.getLayerHeight(1));
-		Log.d(TAG, "layer 2 sz: " + mLayerDrawable.getLayerWidth(2) + "x" + mLayerDrawable.getLayerHeight(2));
-
-		Log.d(TAG, "shape width upper: " + mUpperShape.drawable.getIntrinsicWidth());
-		Log.d(TAG, "shape width lower: " + mLowerShape.drawable.getIntrinsicWidth());
-
-		mDrawingImageView.setScaleType(ImageView.ScaleType.FIT_XY);
-		mDrawingImageView.invalidate();
-
 		mDrawingBitmap.eraseColor(Color.argb(0,0,0,0));
+
 		Canvas c = new Canvas(mDrawingBitmap);
 
 		mUpperShape.drawable.setBounds(
@@ -639,6 +591,7 @@ public class FragmentCalibrate extends Fragment {
 		mLowerShape.drawable.draw(c);
 
 		mDrawingImageView.setImageDrawable(new BitmapDrawable(getResources(), mDrawingBitmap));
+		mDrawingImageView.setScaleType(ImageView.ScaleType.FIT_XY);
 
 		// update ui
 		mEditUpperX.setText(Integer.toString(mUpperShape.center.x));
@@ -651,25 +604,10 @@ public class FragmentCalibrate extends Fragment {
 
 	void setupControlShapes()
 	{
-		// TODO: fail gracefully if camera failed to open
-		if(mCaptureSize == null)
-			return;
-
 		mUpperShape = new Shape();
 		mLowerShape = new Shape();
 
 		mDrawingBitmap = Bitmap.createBitmap(mCaptureWidth, mCaptureHeight, Bitmap.Config.ARGB_8888);
-
-		// ensure drawable size matches image capture size
-		ShapeDrawable blank_drawable = new ShapeDrawable();
-		blank_drawable.setIntrinsicWidth(mCaptureSize.width);
-		blank_drawable.setIntrinsicHeight(mCaptureSize.height);
-		blank_drawable.getPaint().setStrokeWidth(10);
-		blank_drawable.getPaint().setColor(Color.argb(0,0,0,0));
-		blank_drawable.getPaint().setStyle(Paint.Style.STROKE);
-
-		mDrawList = new Drawable[3];
-		mDrawList[0] = blank_drawable;
 
 		// TODO: restore last settings
 		mUpperShape.radius = 100;
@@ -678,31 +616,35 @@ public class FragmentCalibrate extends Fragment {
 		mLowerShape.center = validateShapePosition(new Point(350, 150), mLowerShape.radius);
 
 		updateDrawables();
+
+		// BUGFIX: viewpager showing wrong screen upon startup or permissions granted
+		((MainActivity)getActivity()).mViewPager.invalidate();
 	}
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode,
 			String permissions[], int[] grantResults) {
 		switch (requestCode) {
-			case MY_PERMISSIONS_REQUEST_CAMERA: {
-				// If request is cancelled, the result arrays are empty.
-				if (grantResults.length > 0
-						&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+		case MY_PERMISSIONS_REQUEST_CAMERA: {
+			Log.d(TAG, "MY_PERMISSIONS_REQUEST_CAMERA");
+			// If request is cancelled, the result arrays are empty.
+			if (grantResults.length > 0
+					&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-					boolean opened = safeCameraOpenInView();
-					if(!opened) {
-						Log.d(TAG, "Error, failed to open Camera");
-					}
+				Log.d(TAG, "MY_PERMISSIONS_REQUEST_CAMERA 2");
+				if(safeCameraOpenInView()) {
+					setupCameraExposureSpinner();
+					setupControlShapes();
+					Log.d(TAG, "=== PERMISSION GRANTED, SETTING UP UI!");
 				} else {
-
-					// permission denied, boo! Disable the
-					// functionality that depends on this permission.
+					Log.d(TAG, "Error, failed to open Camera");
 				}
-				return;
+			} else {
+				// permission denied, boo! Disable the
+				// functionality that depends on this permission.
 			}
-
-			// other 'case' lines to check for other
-			// permissions this app might request
+			return;
+		}
 		}
 	}
 
