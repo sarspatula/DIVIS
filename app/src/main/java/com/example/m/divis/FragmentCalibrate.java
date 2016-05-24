@@ -28,9 +28,12 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -42,6 +45,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -354,6 +358,7 @@ public class FragmentCalibrate extends Fragment {
 
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
+			boolean handledEvent = false;
 			PointF curr = new PointF(event.getX(), event.getY());
 
 			switch(event.getAction()) {
@@ -364,10 +369,12 @@ public class FragmentCalibrate extends Fragment {
 					((MainActivity)getActivity()).mViewPager.enabled = false;
 					shape_origin = shape.center;
 					origin = curr;
+					handledEvent = true;
 				}
 				break;
 			case MotionEvent.ACTION_MOVE:
 				if(shape != null) {
+					handledEvent = true;
 					Point p = new Point();
 					p.x = (int)(curr.x - origin.x);
 					p.y = (int)(curr.y - origin.y);
@@ -396,13 +403,15 @@ public class FragmentCalibrate extends Fragment {
 				}
 				break;
 			case MotionEvent.ACTION_UP:
-				if(shape != null)
+				if(shape != null) {
 					Log.d(TAG, "End dragging shape");
+					handledEvent = true;
+				}
 				shape = null;
 				((MainActivity)getActivity()).mViewPager.enabled = true;
 				break;
 			}
-			return true;
+			return handledEvent;
 		}
 	}
 
@@ -475,6 +484,7 @@ public class FragmentCalibrate extends Fragment {
 		if(setupCamera()) {
 			setupCameraExposureSpinner();
 			setupControlShapes();
+			setupControlOverlay();
 		}
 		return v;
 	}
@@ -572,6 +582,7 @@ public class FragmentCalibrate extends Fragment {
 
 	void updateDrawables()
 	{
+//		Log.d(TAG, "=== updateDrawables upper center: " + mUpperShape.center.toString());
 		mDrawingBitmap.eraseColor(Color.argb(0,0,0,0));
 
 		Canvas c = new Canvas(mDrawingBitmap);
@@ -593,13 +604,36 @@ public class FragmentCalibrate extends Fragment {
 		mDrawingImageView.setImageDrawable(new BitmapDrawable(getResources(), mDrawingBitmap));
 		mDrawingImageView.setScaleType(ImageView.ScaleType.FIT_XY);
 
-		// update ui
+		updateEditFields();
+	}
+
+	void updateEditFields()
+	{
 		mEditUpperX.setText(Integer.toString(mUpperShape.center.x));
 		mEditUpperY.setText(Integer.toString(mUpperShape.center.y));
 		mEditUpperSize.setText(Integer.toString(mUpperShape.radius));
 		mEditLowerX.setText(Integer.toString(mLowerShape.center.x));
 		mEditLowerY.setText(Integer.toString(mLowerShape.center.y));
 		mEditLowerSize.setText(Integer.toString(mLowerShape.radius));
+	}
+
+	void updateEditFieldsChanged()
+	{
+//		Log.d(TAG, "=== updateEditFieldsChanged");
+		Point p = new Point();
+		p.x = Integer.parseInt(mEditUpperX.getText().toString());
+		p.y = Integer.parseInt(mEditUpperY.getText().toString());
+		mUpperShape.radius = Math.max(10, Integer.parseInt(mEditUpperSize.getText().toString()));
+		mUpperShape.center = validateShapePosition(p, mUpperShape.radius);
+//		Log.d(TAG, "=== updateEditFieldsChanged: " + p.toString() + " into " + mUpperShape.center.toString());
+
+		p = new Point();
+		p.x = Integer.parseInt(mEditLowerX.getText().toString());
+		p.y = Integer.parseInt(mEditLowerY.getText().toString());
+		mLowerShape.radius = Math.max(10, Integer.parseInt(mEditLowerSize.getText().toString()));
+		mLowerShape.center = validateShapePosition(p, mLowerShape.radius);
+
+		updateDrawables();
 	}
 
 	void setupControlShapes()
@@ -621,6 +655,149 @@ public class FragmentCalibrate extends Fragment {
 		((MainActivity)getActivity()).mViewPager.invalidate();
 	}
 
+	void setupControlOverlay()
+	{
+		updateEditFields();
+		mEditUpperX.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
+				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
+					updateEditFieldsChanged();
+					return true;
+				}
+				return false;
+			}
+		});
+		mEditUpperX.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
+				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
+					updateEditFieldsChanged();
+					return true;
+				}
+				return false;
+			}
+		});
+
+		mEditUpperY.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
+				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
+					updateEditFieldsChanged();
+					return true;
+				}
+				return false;
+			}
+		});
+
+		mEditUpperSize.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
+				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
+					updateEditFieldsChanged();
+					return true;
+				}
+				return false;
+			}
+		});
+
+		mEditLowerX.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
+				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
+					updateEditFieldsChanged();
+					return true;
+				}
+				return false;
+			}
+		});
+
+		mEditLowerY.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
+				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
+					updateEditFieldsChanged();
+					return true;
+				}
+				return false;
+			}
+		});
+
+		mEditLowerSize.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
+					updateEditFieldsChanged();
+					return true;
+				}
+				return false;
+			}
+		});
+
+		/*
+		mEditUpperX.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void afterTextChanged(Editable s)
+			{
+				updateEditFieldsChanged();
+			}
+			@Override public void beforeTextChanged(CharSequence s, int start, int before, int count) {}
+			@Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+		});
+		mEditUpperY.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void afterTextChanged(Editable s)
+			{
+				updateEditFieldsChanged();
+			}
+			@Override public void beforeTextChanged(CharSequence s, int start, int before, int count) {}
+			@Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+		});
+		mEditUpperSize.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void afterTextChanged(Editable s)
+			{
+				updateEditFieldsChanged();
+			}
+			@Override public void beforeTextChanged(CharSequence s, int start, int before, int count) {}
+			@Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+		});
+		mEditLowerX.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void afterTextChanged(Editable s)
+			{
+				updateEditFieldsChanged();
+			}
+			@Override public void beforeTextChanged(CharSequence s, int start, int before, int count) {}
+			@Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+		});
+		mEditLowerY.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void afterTextChanged(Editable s)
+			{
+				updateEditFieldsChanged();
+			}
+			@Override public void beforeTextChanged(CharSequence s, int start, int before, int count) {}
+			@Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+		});
+		mEditLowerSize.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void afterTextChanged(Editable s)
+			{
+				updateEditFieldsChanged();
+			}
+			@Override public void beforeTextChanged(CharSequence s, int start, int before, int count) {}
+			@Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+		});
+		*/
+	}
+
 	@Override
 	public void onRequestPermissionsResult(int requestCode,
 			String permissions[], int[] grantResults) {
@@ -635,6 +812,7 @@ public class FragmentCalibrate extends Fragment {
 				if(safeCameraOpenInView()) {
 					setupCameraExposureSpinner();
 					setupControlShapes();
+					setupControlOverlay();
 					Log.d(TAG, "=== PERMISSION GRANTED, SETTING UP UI!");
 				} else {
 					Log.d(TAG, "Error, failed to open Camera");

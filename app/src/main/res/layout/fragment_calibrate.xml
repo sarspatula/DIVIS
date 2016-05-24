@@ -51,16 +51,19 @@
 		<com.example.m.divis.EditTextWithFont
 			android:id="@+id/upper_x"
 			style="@style/GridTextView"
+			android:inputType="number"
 			android:text="200" />
 
 		<com.example.m.divis.EditTextWithFont
 			android:id="@+id/upper_y"
 			style="@style/GridTextView"
+			android:inputType="number"
 			android:text="150" />
 
 		<com.example.m.divis.EditTextWithFont
 			android:id="@+id/upper_size"
 			style="@style/GridTextView"
+			android:inputType="number"
 			android:text="100" />
 
 		<com.example.m.divis.TextViewWithFont
@@ -70,16 +73,19 @@
 		<com.example.m.divis.EditTextWithFont
 			android:id="@+id/lower_x"
 			style="@style/GridTextView"
+			android:inputType="number"
 			android:text="200" />
 
 		<com.example.m.divis.EditTextWithFont
 			android:id="@+id/lower_y"
 			style="@style/GridTextView"
+			android:inputType="number"
 			android:text="150" />
 
 		<com.example.m.divis.EditTextWithFont
 			android:id="@+id/lower_size"
 			style="@style/GridTextView"
+			android:inputType="number"
 			android:text="100" />
 
 		<com.example.m.divis.TextViewWithFont
