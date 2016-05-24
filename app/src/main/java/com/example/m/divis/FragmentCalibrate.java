@@ -28,6 +28,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
@@ -66,20 +67,10 @@ import java.util.List;
 
 public class FragmentCalibrate extends Fragment {
 	private static final String TAG = "DIVISFragmentCalibrate";
-	private static final int MY_PERMISSIONS_REQUEST_CAMERA = 42;
 
 	// class encapsulates drawable, draw style, center, and radius
 	private Shape mUpperShape;
 	private Shape mLowerShape;
-
-	// Native camera.
-	private Camera mCamera;
-
-	// size of image captured by camera, set to largest available
-	private Camera.Size mCaptureSize;
-	// adjusted by device orientation
-	private int mCaptureWidth;
-	private int mCaptureHeight;
 
 	// View to display the camera output.
 	private CameraPreview mPreview;
@@ -99,6 +90,20 @@ public class FragmentCalibrate extends Fragment {
 	private EditText mEditLowerY;
 	private EditText mEditLowerSize;
 	private Spinner mCameraExposure;
+
+	// capture timer
+	long timerInterval = 1000;
+	Handler timerHandler = new Handler();
+	Runnable timerRunnable = new Runnable() {
+		@Override
+		public void run() {
+			timerHandler.postDelayed(this, timerInterval);
+		}
+	};
+
+	Camera mCamera;
+	int mCaptureWidth;
+	int mCaptureHeight;
 
 	class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -481,47 +486,52 @@ public class FragmentCalibrate extends Fragment {
 			child.setLayoutParams(lparams);
 		}
 
-		if(setupCamera()) {
+		mCamera = ((MainActivity)getActivity()).mCamera;
+		if(mCamera != null) {
+			mCaptureWidth = ((MainActivity)getActivity()).mCaptureWidth;
+			mCaptureHeight = ((MainActivity)getActivity()).mCaptureHeight;
+			setupCameraPreview(getActivity().getBaseContext());
 			setupCameraExposureSpinner();
 			setupControlShapes();
 			setupControlOverlay();
+		} else {
+			// TODO: main activity calls setup?
 		}
+
+		setupTimer();
+
 		return v;
 	}
 
-	boolean setupCamera()
+	@Override
+	public void onPause() {
+		super.onPause();
+		timerHandler.removeCallbacks(timerRunnable);
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		setupTimer();
+	}
+
+	void setupCameraPreview(Context context)
 	{
-		boolean opened = false;
-		int permissionCheck = ContextCompat.checkSelfPermission(getActivity(),
-				Manifest.permission.CAMERA);
-		if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
-			opened = safeCameraOpenInView();
-			if(!opened) {
-				Log.d(TAG, "Error, Camera failed to open");
-			}
-		} else {
-//			// Should we show an explanation?
-//			if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-//					Manifest.permission.CAMERA)) {
-//
-//				// Show an expanation to the user *asynchronously* -- don't block
-//				// this thread waiting for the user's response! After the user
-//				// sees the explanation, try again to request the permission.
-//
-//			} else {
+//		mPreview = new CameraPreview(getActivity().getBaseContext(), mCamera, mCameraView);
+		mPreview = new CameraPreview(context, mCamera, mCameraView);
+		FrameLayout preview = (FrameLayout) mCameraView.findViewById(R.id.camera_view);
+		preview.addView(mPreview);
+		mPreview.startCameraPreview();
+	}
 
-				// No explanation needed, we can request the permission.
-
-				requestPermissions(
-						new String[]{Manifest.permission.CAMERA},
-						MY_PERMISSIONS_REQUEST_CAMERA);
-
-				// MY_PERMISSIONS_REQUEST_CAMERA is an
-				// app-defined int constant. The callback method gets the
-				// result of the request.
-//			}
-		}
-		return opened;
+	public void onCameraReady(MainActivity act)
+	{
+		mCaptureWidth = act.mCaptureWidth;
+		mCaptureHeight = act.mCaptureHeight;
+		setupCameraPreview(act);
+		setupCameraExposureSpinner();
+		setupControlShapes();
+		setupControlOverlay();
 	}
 
 	void setupCameraExposureSpinner()
@@ -798,114 +808,14 @@ public class FragmentCalibrate extends Fragment {
 		*/
 	}
 
-	@Override
-	public void onRequestPermissionsResult(int requestCode,
-			String permissions[], int[] grantResults) {
-		switch (requestCode) {
-		case MY_PERMISSIONS_REQUEST_CAMERA: {
-			Log.d(TAG, "MY_PERMISSIONS_REQUEST_CAMERA");
-			// If request is cancelled, the result arrays are empty.
-			if (grantResults.length > 0
-					&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-				Log.d(TAG, "MY_PERMISSIONS_REQUEST_CAMERA 2");
-				if(safeCameraOpenInView()) {
-					setupCameraExposureSpinner();
-					setupControlShapes();
-					setupControlOverlay();
-					Log.d(TAG, "=== PERMISSION GRANTED, SETTING UP UI!");
-				} else {
-					Log.d(TAG, "Error, failed to open Camera");
-				}
-			} else {
-				// permission denied, boo! Disable the
-				// functionality that depends on this permission.
-			}
-			return;
-		}
-		}
-	}
-
-	private boolean safeCameraOpenInView() {
-		boolean qOpened = false;
-		releaseCameraAndPreview();
-		mCamera = getCameraInstance();
-		qOpened = (mCamera != null);
-
-		Log.d(TAG, "INFO, qOpened==" + qOpened);
-
-		if(qOpened == true){
-			// setup preview
-			mPreview = new CameraPreview(getActivity().getBaseContext(), mCamera, mCameraView);
-			FrameLayout preview = (FrameLayout) mCameraView.findViewById(R.id.camera_view);
-			preview.addView(mPreview);
-			mPreview.startCameraPreview();
-
-			// determine largest capture size available
-			Camera.Parameters params = mCamera.getParameters();
-			List<Camera.Size> capture_sizes = params.getSupportedPictureSizes();
-			int idx_of_largest = 0;
-			for(int i=0; i<capture_sizes.size(); i++) {
-				Log.d(TAG, "Capture Size: " + capture_sizes.get(i).width + "x" + capture_sizes.get(i).height);
-				if(capture_sizes.get(idx_of_largest).height < capture_sizes.get(i).height)
-					idx_of_largest = i;
-			}
-			mCaptureSize = capture_sizes.get(idx_of_largest);
-
-			// adjust by orientation
-			Display display = ((WindowManager)getActivity().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-			switch (display.getRotation()) {
-			case Surface.ROTATION_0:
-			case Surface.ROTATION_180:
-				mCaptureWidth = mCaptureSize.height;
-				mCaptureHeight = mCaptureSize.width;
-				break;
-			default:
-				mCaptureWidth = mCaptureSize.width;
-				mCaptureHeight = mCaptureSize.height;
-				break;
-			}
-
-			Log.d(TAG, "Capture Size Set To " + mCaptureSize.width + "x" + mCaptureSize.height);
-			Log.d(TAG, "Capture Size (rot): " + mCaptureWidth + "x" + mCaptureHeight);
-		}
-		return qOpened;
-	}
-
-	/**
-	 * Safe method for getting a camera instance.
-	 * @return
-	 */
-	public static Camera getCameraInstance(){
-		Camera c = null;
-		Log.d(TAG, "INFO, <getCameraInstance>");
-		try {
-			int n = Camera.getNumberOfCameras();
-			if(n > 0)
-				c = Camera.open(0); // attempt to get a Camera instance
-		} catch (Exception e){
-			e.printStackTrace();
-		}
-		Log.d(TAG, "INFO, </getCameraInstance> " + c);
-		return c; // returns null if camera is unavailable
+	void setupTimer()
+	{
+		timerHandler.postDelayed(timerRunnable, 0);
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		releaseCameraAndPreview();
-	}
-
-	/**
-	 * Clear any existing preview / camera.
-	 */
-	private void releaseCameraAndPreview() {
-
-		if (mCamera != null) {
-			mCamera.stopPreview();
-			mCamera.release();
-			mCamera = null;
-		}
 		if(mPreview != null){
 			mPreview.destroyDrawingCache();
 			mPreview.mCamera = null;
