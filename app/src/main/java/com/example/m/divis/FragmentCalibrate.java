@@ -2,6 +2,7 @@ package com.example.m.divis;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -67,6 +68,7 @@ import java.util.List;
 
 public class FragmentCalibrate extends Fragment {
 	private static final String TAG = "DIVISFragmentCalibrate";
+	SharedPreferences sharedPrefs;
 
 	// class encapsulates drawable, draw style, center, and radius
 	private Shape mUpperShape;
@@ -389,6 +391,8 @@ public class FragmentCalibrate extends Fragment {
 					shape.center = validateShapePosition(curr2, shape.radius);
 
 					updateDrawables();
+					updateEditFields();
+					updatePrefs();
 
 					// FIXME: stops redrawing for some reason?  Fixes it?
 					((MainActivity)getActivity()).mViewPager.invalidate();
@@ -444,6 +448,7 @@ public class FragmentCalibrate extends Fragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		sharedPrefs = getActivity().getPreferences(Context.MODE_PRIVATE);
 		View v = inflater.inflate(R.layout.fragment_calibrate, container, false);
 		mCameraView = v;
 
@@ -589,8 +594,6 @@ public class FragmentCalibrate extends Fragment {
 
 		mDrawingImageView.setImageDrawable(new BitmapDrawable(getResources(), mDrawingBitmap));
 		mDrawingImageView.setScaleType(ImageView.ScaleType.FIT_XY);
-
-		updateEditFields();
 	}
 
 	void updateEditFields()
@@ -601,6 +604,19 @@ public class FragmentCalibrate extends Fragment {
 		mEditLowerX.setText(Integer.toString(mLowerShape.center.x));
 		mEditLowerY.setText(Integer.toString(mLowerShape.center.y));
 		mEditLowerSize.setText(Integer.toString(mLowerShape.radius));
+	}
+
+	void updatePrefs()
+	{
+		SharedPreferences.Editor editor = sharedPrefs.edit();
+		editor.putInt(getString(R.string.saved_upper_x), mUpperShape.center.x);
+		editor.putInt(getString(R.string.saved_upper_y), mUpperShape.center.y);
+		editor.putInt(getString(R.string.saved_upper_radius), mUpperShape.radius);
+
+		editor.putInt(getString(R.string.saved_lower_x), mLowerShape.center.x);
+		editor.putInt(getString(R.string.saved_lower_y), mLowerShape.center.y);
+		editor.putInt(getString(R.string.saved_lower_radius), mLowerShape.radius);
+		editor.commit();
 	}
 
 	void updateEditFieldsChanged()
@@ -618,8 +634,6 @@ public class FragmentCalibrate extends Fragment {
 		p.y = Integer.parseInt(mEditLowerY.getText().toString());
 		mLowerShape.radius = Math.max(10, Integer.parseInt(mEditLowerSize.getText().toString()));
 		mLowerShape.center = validateShapePosition(p, mLowerShape.radius);
-
-		updateDrawables();
 	}
 
 	void setupControlShapes()
@@ -629,13 +643,21 @@ public class FragmentCalibrate extends Fragment {
 
 		mDrawingBitmap = Bitmap.createBitmap(mCaptureWidth, mCaptureHeight, Bitmap.Config.ARGB_8888);
 
-		// TODO: restore last settings
-		mUpperShape.radius = 100;
-		mUpperShape.center = validateShapePosition(new Point(100, 150), mUpperShape.radius);
-		mLowerShape.radius = 50;
-		mLowerShape.center = validateShapePosition(new Point(350, 150), mLowerShape.radius);
+		// restore last settings
+		mUpperShape.radius = sharedPrefs.getInt(getString(R.string.saved_upper_radius), 100);
+		mUpperShape.center = validateShapePosition(new Point(
+					sharedPrefs.getInt(getString(R.string.saved_upper_x), 100),
+					sharedPrefs.getInt(getString(R.string.saved_upper_y), 100)),
+				mUpperShape.radius);
+
+		mLowerShape.radius = sharedPrefs.getInt(getString(R.string.saved_lower_radius), 100);
+		mLowerShape.center = validateShapePosition(new Point(
+					sharedPrefs.getInt(getString(R.string.saved_lower_x), 300),
+					sharedPrefs.getInt(getString(R.string.saved_lower_y), 100)),
+				mLowerShape.radius);
 
 		updateDrawables();
+		updateEditFields();
 
 		// BUGFIX: viewpager showing wrong screen upon startup or permissions granted
 		((MainActivity)getActivity()).mViewPager.invalidate();
@@ -650,6 +672,9 @@ public class FragmentCalibrate extends Fragment {
 				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
 				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
 					updateEditFieldsChanged();
+					updateDrawables();
+					updateEditFields();
+					updatePrefs();
 					return true;
 				}
 				return false;
@@ -661,6 +686,9 @@ public class FragmentCalibrate extends Fragment {
 				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
 				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
 					updateEditFieldsChanged();
+					updateDrawables();
+					updateEditFields();
+					updatePrefs();
 					return true;
 				}
 				return false;
@@ -673,6 +701,9 @@ public class FragmentCalibrate extends Fragment {
 				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
 				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
 					updateEditFieldsChanged();
+					updateDrawables();
+					updateEditFields();
+					updatePrefs();
 					return true;
 				}
 				return false;
@@ -685,6 +716,9 @@ public class FragmentCalibrate extends Fragment {
 				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
 				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
 					updateEditFieldsChanged();
+					updateDrawables();
+					updateEditFields();
+					updatePrefs();
 					return true;
 				}
 				return false;
@@ -697,6 +731,9 @@ public class FragmentCalibrate extends Fragment {
 				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
 				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
 					updateEditFieldsChanged();
+					updateDrawables();
+					updateEditFields();
+					updatePrefs();
 					return true;
 				}
 				return false;
@@ -709,6 +746,9 @@ public class FragmentCalibrate extends Fragment {
 				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
 				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
 					updateEditFieldsChanged();
+					updateDrawables();
+					updateEditFields();
+					updatePrefs();
 					return true;
 				}
 				return false;
@@ -720,68 +760,14 @@ public class FragmentCalibrate extends Fragment {
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
 					updateEditFieldsChanged();
+					updateDrawables();
+					updateEditFields();
+					updatePrefs();
 					return true;
 				}
 				return false;
 			}
 		});
-
-		/*
-		mEditUpperX.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void afterTextChanged(Editable s)
-			{
-				updateEditFieldsChanged();
-			}
-			@Override public void beforeTextChanged(CharSequence s, int start, int before, int count) {}
-			@Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-		});
-		mEditUpperY.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void afterTextChanged(Editable s)
-			{
-				updateEditFieldsChanged();
-			}
-			@Override public void beforeTextChanged(CharSequence s, int start, int before, int count) {}
-			@Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-		});
-		mEditUpperSize.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void afterTextChanged(Editable s)
-			{
-				updateEditFieldsChanged();
-			}
-			@Override public void beforeTextChanged(CharSequence s, int start, int before, int count) {}
-			@Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-		});
-		mEditLowerX.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void afterTextChanged(Editable s)
-			{
-				updateEditFieldsChanged();
-			}
-			@Override public void beforeTextChanged(CharSequence s, int start, int before, int count) {}
-			@Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-		});
-		mEditLowerY.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void afterTextChanged(Editable s)
-			{
-				updateEditFieldsChanged();
-			}
-			@Override public void beforeTextChanged(CharSequence s, int start, int before, int count) {}
-			@Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-		});
-		mEditLowerSize.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void afterTextChanged(Editable s)
-			{
-				updateEditFieldsChanged();
-			}
-			@Override public void beforeTextChanged(CharSequence s, int start, int before, int count) {}
-			@Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-		});
-		*/
 	}
 
 	@Override

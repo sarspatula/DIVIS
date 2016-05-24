@@ -6,6 +6,14 @@
     <string name="title_calibrate">Calibrate</string>
     <string name="title_data">Data</string>
 
+	<!-- Shared Preferences -->
+	<string name="saved_upper_x">saved_upper_x</string>
+	<string name="saved_upper_y">saved_upper_y</string>
+	<string name="saved_upper_radius">saved_upper_radius</string>
+	<string name="saved_lower_x">saved_lower_x</string>
+	<string name="saved_lower_y">saved_lower_y</string>
+	<string name="saved_lower_radius">saved_lower_radius</string>
+
 	<!-- Settings screen -->
 	<string name="settings_device_id">device_id</string>
 	<string name="settings_divis_id">divis_id</string>
