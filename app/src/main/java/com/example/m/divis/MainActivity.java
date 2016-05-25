@@ -203,6 +203,14 @@ public class MainActivity extends AppCompatActivity {
 		Log.d(TAG, "INFO, qOpened==" + qOpened);
 
 		if(qOpened == true) {
+			// disable shutter sound
+			Camera.CameraInfo info = new Camera.CameraInfo();
+			// TODO: camera index setting
+			Camera.getCameraInfo(0, info);
+			if (info.canDisableShutterSound) {
+				mCamera.enableShutterSound(false);
+			}
+
 			// determine largest capture size available
 			Camera.Parameters params = mCamera.getParameters();
 			List<Camera.Size> capture_sizes = params.getSupportedPictureSizes();
