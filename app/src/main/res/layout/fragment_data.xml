@@ -15,6 +15,15 @@
 		android:columnCount="3"
 		android:orientation="horizontal">
 
+		<com.example.m.divis.ButtonWithFont
+			android:id="@+id/btn_write_csv"
+			style="@style/MyButton"
+			android:text="@string/btn_write_csv"
+			android:layout_marginBottom="24dp"
+			android:layout_columnSpan="3"
+			android:layout_width="match_parent"
+			android:background="#7aaee9" />
+
 		<com.example.m.divis.TextViewWithFont
 			android:text="@string/data_timestamp"
 			android:background="@drawable/bordered_background"
@@ -30,9 +39,10 @@
 			android:text="@string/data_secci_depth"
 			style="@style/GridTextViewBordered" />
 
-		<com.example.m.divis.TextViewWithFont
+		<com.example.m.divis.EditTextWithFont
 			android:layout_marginTop="24dp"
 			android:id="@+id/secci_depth"
+			android:inputType="number"
 			android:layout_columnSpan="2"
 			style="@style/GridTextViewBordered" />
 

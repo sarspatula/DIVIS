@@ -23,15 +23,27 @@
 	<string name="saved_upper_sensor_depth_default">0</string>
 	<string name="saved_lower_sensor_depth">saved_lower_sensor_depth</string>
 	<string name="saved_lower_sensor_depth_default">0</string>
+	<string name="saved_secci_depth">saved_secci_depth</string>
+	<string name="saved_secci_depth_default">0</string>
 	<string name="saved_data_refresh_rate">saved_data_refresh_rate</string>
 	<string name="saved_data_refresh_rate_default">1000</string>
 
 	<string name="saved_upper_x">saved_upper_x</string>
+	<string name="saved_upper_x_default">0</string>
 	<string name="saved_upper_y">saved_upper_y</string>
+	<string name="saved_upper_y_default">0</string>
 	<string name="saved_upper_radius">saved_upper_radius</string>
+	<string name="saved_upper_radius_default">0</string>
 	<string name="saved_lower_x">saved_lower_x</string>
+	<string name="saved_lower_x_default">0</string>
 	<string name="saved_lower_y">saved_lower_y</string>
+	<string name="saved_lower_y_default">0</string>
 	<string name="saved_lower_radius">saved_lower_radius</string>
+	<string name="saved_lower_radius_default">0</string>
+	<string name="saved_camera_exposure">saved_camera_exposure</string>
+	<string name="saved_camera_exposure_default">0</string>
+	<string name="saved_min_rgb_for_live_pixel">saved_min_rgb_for_live_pixel</string>
+	<string name="saved_min_rgb_for_live_pixel_default">1</string>
 
 	<!-- Settings screen -->
 	<string name="settings_device_id">device_id</string>
@@ -54,6 +66,7 @@
     <string name="calibrate_min_rgb">Minimum rgb for live pixel</string>
 
 	<!-- Data screen -->
+	<string name="btn_write_csv">Write to CSV</string>
 	<string name="data_column_upper">Upper</string>
 	<string name="data_column_lower">Lower</string>
 	<string name="data_timestamp">date_time</string>
