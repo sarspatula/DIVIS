@@ -22,6 +22,7 @@
 
 		<com.example.m.divis.EditTextWithFont
 			android:id="@+id/device_id"
+			android:nextFocusForward="@+id/divis_id"
 			style="@style/GridTextViewBordered" />
 
 		<com.example.m.divis.TextViewWithFont
@@ -31,6 +32,7 @@
 
 		<com.example.m.divis.EditTextWithFont
 			android:id="@+id/divis_id"
+			android:nextFocusForward="@+id/app_version"
 			style="@style/GridTextViewBordered" />
 
 		<com.example.m.divis.TextViewWithFont
@@ -40,6 +42,7 @@
 
 		<com.example.m.divis.EditTextWithFont
 			android:id="@+id/app_version"
+			android:nextFocusForward="@+id/location_id"
 			style="@style/GridTextViewBordered" />
 
 		<com.example.m.divis.TextViewWithFont
@@ -49,6 +52,7 @@
 
 		<com.example.m.divis.EditTextWithFont
 			android:id="@+id/location_id"
+			android:nextFocusForward="@+id/location_name"
 			style="@style/GridTextViewBordered" />
 
 		<com.example.m.divis.TextViewWithFont
@@ -58,6 +62,7 @@
 
 		<com.example.m.divis.EditTextWithFont
 			android:id="@+id/location_name"
+			android:nextFocusForward="@+id/location_detail"
 			android:maxLength="25"
 			style="@style/GridTextViewBordered" />
 
@@ -68,6 +73,7 @@
 
 		<com.example.m.divis.EditTextWithFont
 			android:id="@+id/location_detail"
+			android:nextFocusForward="@+id/upper_sensor_depth"
 			android:maxLength="100"
 			style="@style/GridTextViewBordered" />
 
@@ -78,6 +84,7 @@
 
 		<com.example.m.divis.EditTextWithFont
 			android:id="@+id/upper_sensor_depth"
+			android:nextFocusForward="@+id/lower_sensor_depth"
 			android:inputType="number"
 			style="@style/GridTextViewBordered" />
 
@@ -88,6 +95,7 @@
 
 		<com.example.m.divis.EditTextWithFont
 			android:id="@+id/lower_sensor_depth"
+			android:nextFocusForward="@+id/data_refresh_rate"
 			android:inputType="number"
 			style="@style/GridTextViewBordered" />
 

@@ -30,6 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -99,8 +100,9 @@ public class FragmentSettings extends Fragment {
 					Integer.parseInt(getString(R.string.saved_data_refresh_rate_default)))));
 	}
 
-	void saveSettings()
+	void updatePrefs()
 	{
+		Log.d(TAG, "updatePrefs");
 		SharedPreferences.Editor editor = sharedPrefs.edit();
 		editor.putString(getString(R.string.saved_device_id),
 				device_id.getText().toString());
@@ -129,10 +131,27 @@ public class FragmentSettings extends Fragment {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
-					saveSettings();
+					updatePrefs();
+
+					// hide keyboard on done event
+					if(actionId == EditorInfo.IME_ACTION_DONE) {
+						InputMethodManager imm= (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+						imm.hideSoftInputFromWindow(device_id.getWindowToken(), 0);
+					} else {
+						// let handler move focus
+						return false;
+					}
 					return true;
 				}
 				return false;
+			}
+		});
+		et.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (!hasFocus) {
+					updatePrefs();
+				}
 			}
 		});
 	}

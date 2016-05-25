@@ -642,6 +642,7 @@ public class FragmentCalibrate extends Fragment {
 
 	void updatePrefs()
 	{
+		Log.d(TAG, "updatePrefs");
 		SharedPreferences.Editor editor = sharedPrefs.edit();
 		editor.putInt(getString(R.string.saved_upper_x), mUpperShape.center.x);
 		editor.putInt(getString(R.string.saved_upper_y), mUpperShape.center.y);
@@ -707,9 +708,26 @@ public class FragmentCalibrate extends Fragment {
 					updateDrawables();
 					updateEditFields();
 					updatePrefs();
+
+					// hide keyboard on done event
+					if(actionId == EditorInfo.IME_ACTION_DONE) {
+						InputMethodManager imm= (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+						imm.hideSoftInputFromWindow(mEditUpperX.getWindowToken(), 0);
+					}
 					return true;
 				}
 				return false;
+			}
+		});
+		et.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (!hasFocus) {
+					updateEditFieldsChanged();
+					updateDrawables();
+					updateEditFields();
+					updatePrefs();
+				}
 			}
 		});
 	}

@@ -34,6 +34,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -394,21 +395,36 @@ public class FragmentData extends Fragment {
 		mSecciDepth.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
-					SharedPreferences.Editor editor = sharedPrefs.edit();
-					int i = 0;
-					String txt = mSecciDepth.getText().toString();
-					if(txt != null)
-						i = Integer.parseInt(txt);
-					editor.putInt(getString(R.string.saved_secci_depth), i);
-					editor.commit();
+				if (actionId == EditorInfo.IME_ACTION_DONE) {
+					updatePrefs();
+					InputMethodManager imm= (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+					imm.hideSoftInputFromWindow(mSecciDepth.getWindowToken(), 0);
 					return true;
 				}
 				return false;
 			}
 		});
+		mSecciDepth.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if(!hasFocus)
+					updatePrefs();
+			}
+		});
 		
 		return v;
+	}
+
+	void updatePrefs()
+	{
+		Log.d(TAG, "updatePrefs");
+		SharedPreferences.Editor editor = sharedPrefs.edit();
+		int i = 0;
+		String txt = mSecciDepth.getText().toString();
+		if(txt != null)
+			i = Integer.parseInt(txt);
+		editor.putInt(getString(R.string.saved_secci_depth), i);
+		editor.commit();
 	}
 
 	@Override
