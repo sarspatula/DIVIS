@@ -592,6 +592,22 @@ public class FragmentCalibrate extends Fragment {
 				mLowerShape.center.y + mLowerShape.radius); // bottom
 		mLowerShape.drawable.draw(c);
 
+		// captions
+		Paint paint = new Paint();
+		paint.setColor(Color.WHITE);
+		paint.setTypeface(MainActivity.typeface);
+		paint.setTextSize(20);
+		int textWidth = (int)Math.ceil(paint.measureText("Upper"));
+		c.drawText("Upper",
+				mUpperShape.center.x - textWidth/2,
+				mUpperShape.center.y - mUpperShape.radius - 10,
+				paint);
+		textWidth = (int)Math.ceil(paint.measureText("Lower"));
+		c.drawText("Lower",
+				mLowerShape.center.x - textWidth/2,
+				mLowerShape.center.y - mLowerShape.radius - 10,
+				paint);
+
 		mDrawingImageView.setImageDrawable(new BitmapDrawable(getResources(), mDrawingBitmap));
 		mDrawingImageView.setScaleType(ImageView.ScaleType.FIT_XY);
 	}
