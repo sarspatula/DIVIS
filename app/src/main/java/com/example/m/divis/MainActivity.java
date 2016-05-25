@@ -8,7 +8,6 @@ import android.graphics.PixelFormat;
 import android.graphics.Typeface;
 
 import android.hardware.Camera;
-import android.os.Build;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -72,26 +71,28 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// for hiding titlebar
-		if (Build.VERSION.SDK_INT < 16) {
-			getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		} else {
-			View decorView = getWindow().getDecorView();
-			int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-			decorView.setSystemUiVisibility(uiOptions);
-			ActionBar actionBar = getActionBar();
-			if(actionBar != null)
-				actionBar.hide();
-		}
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+	    getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+		View decorView = getWindow().getDecorView();
+		int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+		decorView.setSystemUiVisibility(uiOptions);
+		// Remember that you should never show the action bar if the
+		// status bar is hidden, so hide that too if necessary.
+		ActionBar actionBar = getActionBar();
+		if(actionBar != null)
+			actionBar.hide();
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
 		// for hiding titlebar
 		View root = findViewById(R.id.main_content);
-		root.setSystemUiVisibility(
-				View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-				View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-				View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+		root.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+//		root.setSystemUiVisibility(
+//				View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+//				View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+//				View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
 
 		typeface = Typeface.createFromAsset(getAssets(), "fonts/Calibri.ttf");
 

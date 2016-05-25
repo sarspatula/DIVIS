@@ -47,7 +47,11 @@ import java.util.Date;
 import java.util.List;
 
 public class MyViewPager extends ViewPager {
+	// Note: disabled, rename neverEnabled to enabled below to reenable
 	public boolean enabled;
+
+	// NOTE: Disable swipe always rather than only while handling motion events
+	boolean neverEnabled = false;
 
 	public MyViewPager(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -56,7 +60,7 @@ public class MyViewPager extends ViewPager {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		if (this.enabled) {
+		if (neverEnabled) {
 			return super.onTouchEvent(event);
 		}
 
@@ -65,7 +69,7 @@ public class MyViewPager extends ViewPager {
 
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent event) {
-		if (this.enabled) {
+		if (neverEnabled) {
 			return super.onInterceptTouchEvent(event);
 		}
 
