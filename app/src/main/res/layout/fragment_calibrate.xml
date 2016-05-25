@@ -9,6 +9,12 @@
 		android:layout_height="match_parent"
 		android:layout_weight="1" />
 
+	<!-- focusable to prevent EditText from showing keyboard immediately -->
+	<!--
+		android:focusable="true"
+		android:focusableInTouchMode="true"
+		android:descendantFocusability="beforeDescendants"
+		-->
 	<GridLayout
 		android:id="@+id/control_grid"
 		android:layout_width="match_parent"

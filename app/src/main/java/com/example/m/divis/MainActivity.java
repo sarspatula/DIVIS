@@ -32,6 +32,7 @@ import android.view.ViewGroup;
 
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
 import java.util.List;
@@ -106,6 +107,31 @@ public class MainActivity extends AppCompatActivity {
 		mViewPager = (MyViewPager) findViewById(R.id.container);
 		mViewPager.setAdapter(mSectionsPagerAdapter);
 		mViewPager.setCurrentItem(1, false);
+
+		// hide keyboard
+		mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+			@Override
+			public void onPageSelected(int position) {
+				final InputMethodManager imm = (InputMethodManager)getSystemService(
+					Context.INPUT_METHOD_SERVICE);
+				imm.hideSoftInputFromWindow(mViewPager.getWindowToken(), 0);
+			}
+
+			@Override
+			public void onPageScrolled(int position, float offset, int offsetPixels) {
+			}
+
+			@Override
+			public void onPageScrollStateChanged(int state) {
+				if (state == ViewPager.SCROLL_STATE_IDLE) {
+					if (mViewPager.getCurrentItem() == 0) {
+						// Hide the keyboard.
+						((InputMethodManager)getSystemService(INPUT_METHOD_SERVICE))
+							.hideSoftInputFromWindow(mViewPager.getWindowToken(), 0);
+					}
+				}
+			}
+		});
 
 		// prevent destruction of other fragments
 		mViewPager.setOffscreenPageLimit(2);

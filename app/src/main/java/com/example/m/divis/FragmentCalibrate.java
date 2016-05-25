@@ -48,6 +48,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -460,6 +461,23 @@ public class FragmentCalibrate extends Fragment {
 		mEditLowerSize = (EditText)v.findViewById(R.id.lower_size);
 		mCameraExposure = (Spinner)v.findViewById(R.id.camera_exposure);
 
+		// stop keyboard from showing immediately
+		GridLayout grid = (GridLayout)v.findViewById(R.id.control_grid);
+//		mCameraExposure.requestFocus();
+//		grid.requestFocus();
+//		grid.clearFocus();
+//		InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+//		imm.hideSoftInputFromWindow(grid.getWindowToken(), 0);
+		/*
+		mEditUpperX.clearFocus();
+		mEditUpperY.clearFocus();
+		mEditUpperSize.clearFocus();
+		mEditLowerX.clearFocus();
+		mEditLowerY.clearFocus();
+		mEditLowerSize.clearFocus();
+		mCameraExposure.clearFocus();
+		*/
+
 		mDrawingImageView = (ImageView)v.findViewById(R.id.canvas);
 		mDrawingImageView.setOnTouchListener(new MyOnTouchListener());
 
@@ -473,7 +491,7 @@ public class FragmentCalibrate extends Fragment {
 		mCameraExposure.setLayoutParams(lparams);
 //		Log.d(TAG, "SET WIDTH " + Float.toString(width/2));
 
-		GridLayout grid = (GridLayout)v.findViewById(R.id.control_grid);
+//		GridLayout grid = (GridLayout)v.findViewById(R.id.control_grid);
 		for (int i = grid.getChildCount() - 3; i >= 0; i--) {
 			final View child = grid.getChildAt(i);
 			lparams = (GridLayout.LayoutParams)child.getLayoutParams();
