@@ -679,111 +679,33 @@ public class FragmentCalibrate extends Fragment {
 		((MainActivity)getActivity()).mViewPager.invalidate();
 	}
 
+	void setupEditTextListener(EditText et)
+	{
+		et.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
+					updateEditFieldsChanged();
+					updateDrawables();
+					updateEditFields();
+					updatePrefs();
+					return true;
+				}
+				return false;
+			}
+		});
+	}
+
 	void setupControlOverlay()
 	{
 		updateEditFields();
-		mEditUpperX.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-			@Override
-			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
-				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
-					updateEditFieldsChanged();
-					updateDrawables();
-					updateEditFields();
-					updatePrefs();
-					return true;
-				}
-				return false;
-			}
-		});
-		mEditUpperX.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-			@Override
-			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
-				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
-					updateEditFieldsChanged();
-					updateDrawables();
-					updateEditFields();
-					updatePrefs();
-					return true;
-				}
-				return false;
-			}
-		});
-
-		mEditUpperY.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-			@Override
-			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
-				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
-					updateEditFieldsChanged();
-					updateDrawables();
-					updateEditFields();
-					updatePrefs();
-					return true;
-				}
-				return false;
-			}
-		});
-
-		mEditUpperSize.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-			@Override
-			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
-				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
-					updateEditFieldsChanged();
-					updateDrawables();
-					updateEditFields();
-					updatePrefs();
-					return true;
-				}
-				return false;
-			}
-		});
-
-		mEditLowerX.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-			@Override
-			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
-				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
-					updateEditFieldsChanged();
-					updateDrawables();
-					updateEditFields();
-					updatePrefs();
-					return true;
-				}
-				return false;
-			}
-		});
-
-		mEditLowerY.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-			@Override
-			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				Log.d(TAG, "onEditorAction Action " + actionId + " compared to " + EditorInfo.IME_ACTION_DONE);
-				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
-					updateEditFieldsChanged();
-					updateDrawables();
-					updateEditFields();
-					updatePrefs();
-					return true;
-				}
-				return false;
-			}
-		});
-
-		mEditLowerSize.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-			@Override
-			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
-					updateEditFieldsChanged();
-					updateDrawables();
-					updateEditFields();
-					updatePrefs();
-					return true;
-				}
-				return false;
-			}
-		});
+		setupEditTextListener(mEditUpperX);
+		setupEditTextListener(mEditUpperX);
+		setupEditTextListener(mEditUpperY);
+		setupEditTextListener(mEditUpperSize);
+		setupEditTextListener(mEditLowerX);
+		setupEditTextListener(mEditLowerY);
+		setupEditTextListener(mEditLowerSize);
 	}
 
 	@Override
