@@ -7,6 +7,25 @@
     <string name="title_data">Data</string>
 
 	<!-- Shared Preferences -->
+	<string name="saved_device_id">saved_device_id</string>
+	<string name="saved_device_id_default"></string>
+	<string name="saved_divis_id">saved_divis_id</string>
+	<string name="saved_divis_id_default"></string>
+	<string name="saved_app_version">saved_app_version</string>
+	<string name="saved_app_version_default"></string>
+	<string name="saved_location_id">saved_location_id</string>
+	<string name="saved_location_id_default"></string>
+	<string name="saved_location_name">saved_location_name</string>
+	<string name="saved_location_name_default"></string>
+	<string name="saved_location_detail">saved_location_detail</string>
+	<string name="saved_location_detail_default"></string>
+	<string name="saved_upper_sensor_depth">saved_upper_sensor_depth</string>
+	<string name="saved_upper_sensor_depth_default">0</string>
+	<string name="saved_lower_sensor_depth">saved_lower_sensor_depth</string>
+	<string name="saved_lower_sensor_depth_default">0</string>
+	<string name="saved_data_refresh_rate">saved_data_refresh_rate</string>
+	<string name="saved_data_refresh_rate_default">1000</string>
+
 	<string name="saved_upper_x">saved_upper_x</string>
 	<string name="saved_upper_y">saved_upper_y</string>
 	<string name="saved_upper_radius">saved_upper_radius</string>

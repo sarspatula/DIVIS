@@ -30,8 +30,6 @@ import android.view.ViewGroup;
   
 import android.widget.TextView;
 
-import java.io.InputStream;
-
 public class FragmentData extends Fragment {
 	private static final String TAG = "DIVISFragmentData";
 	SharedPreferences sharedPrefs;

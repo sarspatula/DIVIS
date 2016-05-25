@@ -23,6 +23,8 @@
 	<style name="MyTextView">
 		<item name="android:layout_width">wrap_content</item>
 		<item name="android:layout_height">wrap_content</item>
+		<item name="android:singleLine">true</item>
+		<item name="android:textCursorDrawable">@null</item>
 		<!-- FIXME: over min sdk level -->
 		<!--item name="android:fontFamily">Calibri</item-->
 		<item name="android:textColor">@color/colorTextPrimary</item>
