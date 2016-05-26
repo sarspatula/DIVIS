@@ -491,11 +491,31 @@ public class FragmentCalibrate extends Fragment {
 			setupControlOverlay();
 		}
 
+		// takePicture stops preview, restart when calibrate screen shown
+		((MainActivity)getActivity()).mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+			@Override
+			public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) { } 
+
+			@Override
+			public void onPageSelected(int position) {
+				MainActivity act = (MainActivity)getActivity();
+				if(position == 1 && act.mCamera != null) {
+					act.mCamera.startPreview();
+				} else {
+				}
+			}
+
+			@Override
+			public void onPageScrollStateChanged(int state) { }
+		});
+
 		return v;
 	}
 
 	void setupCameraPreview(Context context)
 	{
+		if(mCamera == null)
+			return;
 		mPreview = new CameraPreview(context, mCamera, mCameraView);
 		FrameLayout preview = (FrameLayout) mCameraView.findViewById(R.id.camera_view);
 		preview.addView(mPreview);

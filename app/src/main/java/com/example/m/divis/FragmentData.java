@@ -217,7 +217,7 @@ public class FragmentData extends Fragment {
 
 			// takePicture has finished, now safe to resume the preview
 			MainActivity act = (MainActivity)getActivity();
-			act.mCamera.startPreview();
+//			act.mCamera.startPreview();
 		}
 	}
 
@@ -358,7 +358,16 @@ public class FragmentData extends Fragment {
 				SurfaceView preview = ((FragmentCalibrate)act.mSectionsPagerAdapter.getItem(1)).mPreview;
 				// callbacks: shutter, raw, post view, jpeg
 				Log.d(TAG, "Taking a picture!");
-				act.mCamera.takePicture(mRawCallback, mRawCallback, null, mJpegCallback);
+				try {
+					act.mCamera.takePicture(mRawCallback, mRawCallback, null, mJpegCallback);
+				} catch(Exception e) {
+					// "E/Camera: Error 100" and "Camera service died!"
+					// bug in Android, may require restarting the phone?
+					// Attempting quick workaround
+					Log.d(TAG, e.toString());
+					Toast.makeText(getActivity(), e.toString(), Toast.LENGTH_LONG).show();
+					getActivity().recreate();
+				}
 			}
 
 			timerInterval = sharedPrefs.getInt(
