@@ -10,4 +10,7 @@
 
     <color name="tab_background_selected">#000</color>
     <color name="tab_background_unselected">#ccc</color>
+
+    <color name="button_default">#7aaee9</color>
+    <color name="button_pressed">#599cc7</color>
 </resources>
