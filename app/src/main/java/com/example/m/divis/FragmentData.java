@@ -432,6 +432,8 @@ public class FragmentData extends Fragment {
 					updatePrefs();
 			}
 		});
+
+		setupTimer();
 		
 		return v;
 	}
@@ -462,6 +464,7 @@ public class FragmentData extends Fragment {
 
 	void setupTimer()
 	{
+		timerHandler.removeCallbacks(timerRunnable);
 		timerHandler.postDelayed(timerRunnable, 1000);
 	}
 
