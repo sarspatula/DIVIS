@@ -230,26 +230,9 @@ public class FragmentData extends Fragment {
 			return true;
 		} else {
 			Log.d(TAG, "Requesting");
-//			// Should we show an explanation?
-//			if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-//					Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-//
-//				// Show an expanation to the user *asynchronously* -- don't block
-//				// this thread waiting for the user's response! After the user
-//				// sees the explanation, try again to request the permission.
-//
-//			} else {
-
-				// No explanation needed, we can request the permission.
-
-				requestPermissions(
-						new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-						MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
-
-				// MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE is an
-				// app-defined int constant. The callback method gets the
-				// result of the request.
-//			}
+			requestPermissions(
+					new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+					MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
 		}
 		return false;
 	}

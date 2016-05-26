@@ -381,12 +381,6 @@ public class FragmentCalibrate extends Fragment {
 					PointF pf2 = transformCoordTouchToBitmap((float)p.x, (float)p.y);
 					Point p2 = new Point((int)Math.floor(pf2.x), (int)Math.floor(pf2.y));
 
-					/*
-					shape.center.x = shape_origin.x + p2.x;
-					shape.center.y = shape_origin.y + p2.y;
-					shape.center = validateShapePosition(shape.center, shape.radius);
-					*/
-
 					// centered on touch
 					PointF currf2 = transformCoordTouchToBitmap((float)curr.x, (float)curr.y);
 					Point curr2 = new Point((int)Math.floor(currf2.x), (int)Math.floor(currf2.y));
@@ -396,11 +390,9 @@ public class FragmentCalibrate extends Fragment {
 					updateEditFields();
 					updatePrefs();
 
-					// FIXME: stops redrawing for some reason?  Fixes it?
+					// NOTE: stops redrawing for some reason?  Fixes it?
 					((MainActivity)getActivity()).mViewPager.invalidate();
 
-//					Log.d(TAG, "drag " + p2.x + "x" + p2.y + " : " + shape.center.toString());
-//					Log.d(TAG, "drag " + curr2.x + "x" + curr2.y + " : " + shape.center.toString());
 				}
 				break;
 			case MotionEvent.ACTION_UP:
@@ -446,15 +438,7 @@ public class FragmentCalibrate extends Fragment {
 
 		float coordX = percentX * mCaptureWidth;
 		float coordY = percentY * mCaptureHeight;
-/*
-//		float finalX = origW / mDrawingImageView.getWidth();
-//		float finalY = origH / mDrawingImageView.getHeight();
-		float finalX = x / mDrawingImageView.getWidth() * origW;
-		float finalY = y / mDrawingImageView.getHeight() * origH;
-*/
-//		Log.d(TAG, "COORDS: " + origW + "x" + origH + " : " + mDrawingImageView.getWidth() + "x" + mDrawingImageView.getHeight());
 
-//		return new PointF(finalX , finalY);
 		return new PointF(coordX , coordY);
 	}
 
@@ -473,23 +457,6 @@ public class FragmentCalibrate extends Fragment {
 		mCameraExposure = (Spinner)v.findViewById(R.id.camera_exposure);
 		mMinRGBLevel = (EditText)v.findViewById(R.id.min_rgb);
 
-		// stop keyboard from showing immediately
-		GridLayout grid = (GridLayout)v.findViewById(R.id.control_grid);
-//		mCameraExposure.requestFocus();
-//		grid.requestFocus();
-//		grid.clearFocus();
-//		InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-//		imm.hideSoftInputFromWindow(grid.getWindowToken(), 0);
-		/*
-		mEditUpperX.clearFocus();
-		mEditUpperY.clearFocus();
-		mEditUpperSize.clearFocus();
-		mEditLowerX.clearFocus();
-		mEditLowerY.clearFocus();
-		mEditLowerSize.clearFocus();
-		mCameraExposure.clearFocus();
-		*/
-
 		mDrawingImageView = (ImageView)v.findViewById(R.id.canvas);
 		mDrawingImageView.setOnTouchListener(new MyOnTouchListener());
 
@@ -501,9 +468,8 @@ public class FragmentCalibrate extends Fragment {
 		int width = displaymetrics.widthPixels;
 		lparams.width = width/2;
 		mCameraExposure.setLayoutParams(lparams);
-//		Log.d(TAG, "SET WIDTH " + Float.toString(width/2));
 
-//		GridLayout grid = (GridLayout)v.findViewById(R.id.control_grid);
+		GridLayout grid = (GridLayout)v.findViewById(R.id.control_grid);
 		for (int i = grid.getChildCount() - 3; i >= 0; i--) {
 			final View child = grid.getChildAt(i);
 			lparams = (GridLayout.LayoutParams)child.getLayoutParams();
@@ -523,8 +489,6 @@ public class FragmentCalibrate extends Fragment {
 			setupCameraExposureSpinner();
 			setupControlShapes();
 			setupControlOverlay();
-		} else {
-			// TODO: main activity calls setup?
 		}
 
 		return v;
@@ -532,7 +496,6 @@ public class FragmentCalibrate extends Fragment {
 
 	void setupCameraPreview(Context context)
 	{
-//		mPreview = new CameraPreview(getActivity().getBaseContext(), mCamera, mCameraView);
 		mPreview = new CameraPreview(context, mCamera, mCameraView);
 		FrameLayout preview = (FrameLayout) mCameraView.findViewById(R.id.camera_view);
 		preview.addView(mPreview);
@@ -607,7 +570,6 @@ public class FragmentCalibrate extends Fragment {
 
 	void updateDrawables()
 	{
-//		Log.d(TAG, "=== updateDrawables upper center: " + mUpperShape.center.toString());
 		mDrawingBitmap.eraseColor(Color.argb(0,0,0,0));
 
 		Canvas c = new Canvas(mDrawingBitmap);
@@ -679,13 +641,11 @@ public class FragmentCalibrate extends Fragment {
 
 	void updateEditFieldsChanged()
 	{
-//		Log.d(TAG, "=== updateEditFieldsChanged");
 		Point p = new Point();
 		p.x = Integer.parseInt(mEditUpperX.getText().toString());
 		p.y = Integer.parseInt(mEditUpperY.getText().toString());
 		mUpperShape.radius = Math.max(10, Integer.parseInt(mEditUpperSize.getText().toString()));
 		mUpperShape.center = validateShapePosition(p, mUpperShape.radius);
-//		Log.d(TAG, "=== updateEditFieldsChanged: " + p.toString() + " into " + mUpperShape.center.toString());
 
 		p = new Point();
 		p.x = Integer.parseInt(mEditLowerX.getText().toString());

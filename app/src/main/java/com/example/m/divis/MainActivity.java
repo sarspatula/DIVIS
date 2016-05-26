@@ -69,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
 	public int mCaptureWidth;
 	public int mCaptureHeight;
 
+	public static int index_of_back_camera = 0;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// for hiding titlebar
@@ -90,10 +92,6 @@ public class MainActivity extends AppCompatActivity {
 		// for hiding titlebar
 		View root = findViewById(R.id.main_content);
 		root.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-//		root.setSystemUiVisibility(
-//				View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-//				View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-//				View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
 
 		typeface = Typeface.createFromAsset(getAssets(), "fonts/Calibri.ttf");
 
@@ -139,40 +137,7 @@ public class MainActivity extends AppCompatActivity {
 		TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
 		tabLayout.setupWithViewPager(mViewPager);
 
-		/*
-		FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-		fab.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-						.setAction("Action", null).show();
-		  }
-	  });
-	  */
 		setupCamera();
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-//		getMenuInflater().inflate(R.menu.menu_main, menu);
-//		return true;
-		return false;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-
-		//noinspection SimplifiableIfStatement
-		if (id == R.id.action_settings) {
-			return true;
-		}
-
-		return super.onOptionsItemSelected(item);
 	}
 
 	boolean setupCamera()
@@ -186,26 +151,9 @@ public class MainActivity extends AppCompatActivity {
 				Log.d(TAG, "Error, Camera failed to open");
 			}
 		} else {
-//			// Should we show an explanation?
-//			if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-//					Manifest.permission.CAMERA)) {
-//
-//				// Show an expanation to the user *asynchronously* -- don't block
-//				// this thread waiting for the user's response! After the user
-//				// sees the explanation, try again to request the permission.
-//
-//			} else {
-
-				// No explanation needed, we can request the permission.
-
-				ActivityCompat.requestPermissions(this,
-						new String[]{Manifest.permission.CAMERA},
-						MY_PERMISSIONS_REQUEST_CAMERA);
-
-				// MY_PERMISSIONS_REQUEST_CAMERA is an
-				// app-defined int constant. The callback method gets the
-				// result of the request.
-//			}
+			ActivityCompat.requestPermissions(this,
+					new String[]{Manifest.permission.CAMERA},
+					MY_PERMISSIONS_REQUEST_CAMERA);
 		}
 		return opened;
 	}
@@ -222,13 +170,6 @@ public class MainActivity extends AppCompatActivity {
 
 				Log.d(TAG, "MY_PERMISSIONS_REQUEST_CAMERA 2");
 				if(safeCameraOpen()) {
-					/*
-//					FragmentCalibrate fc = (FragmentCalibrate)getSupportFragmentManager().findFragmentByTag("calibrate");
-					FragmentCalibrate fc = (FragmentCalibrate)mSectionsPagerAdapter.getItem(1);
-					if(fc != null) {
-						fc.onCameraReady(this);
-					}
-					*/
 					Log.d(TAG, "=== PERMISSION GRANTED, SETTING UP UI!");
 					recreate();
 				} else {
@@ -254,8 +195,7 @@ public class MainActivity extends AppCompatActivity {
 		if(qOpened == true) {
 			// disable shutter sound
 			Camera.CameraInfo info = new Camera.CameraInfo();
-			// TODO: camera index setting
-			Camera.getCameraInfo(0, info);
+			Camera.getCameraInfo(index_of_back_camera, info);
 			if (info.canDisableShutterSound) {
 				mCamera.enableShutterSound(false);
 			}
@@ -316,9 +256,9 @@ public class MainActivity extends AppCompatActivity {
 		Log.d(TAG, "INFO, <getCameraInstance>");
 		try {
 			int n = Camera.getNumberOfCameras();
-			// TODO: setting to select camera
+			// choose back facing camera
 			if(n > 0) {
-				int index_of_back_camera = 0;
+				index_of_back_camera = 0;
 				Camera.CameraInfo info = new Camera.CameraInfo();
 				for(int i=0; i<n-1; i++) {
 					Camera.getCameraInfo(i, info);
@@ -327,13 +267,13 @@ public class MainActivity extends AppCompatActivity {
 						break;
 					}
 				}
-				c = Camera.open(index_of_back_camera); // attempt to get a Camera instance
+				c = Camera.open(index_of_back_camera);
 			}
 		} catch (Exception e){
 			e.printStackTrace();
 		}
 		Log.d(TAG, "INFO, </getCameraInstance> " + c);
-		return c; // returns null if camera is unavailable
+		return c;
 	}
 
 	@Override
