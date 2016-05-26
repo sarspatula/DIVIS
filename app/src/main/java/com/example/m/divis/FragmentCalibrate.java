@@ -93,6 +93,7 @@ public class FragmentCalibrate extends Fragment {
 	private EditText mEditLowerY;
 	private EditText mEditLowerSize;
 	private Spinner mCameraExposure;
+	private EditText mMinRGBLevel;
 
 	Camera mCamera;
 	int mCaptureWidth;
@@ -460,6 +461,7 @@ public class FragmentCalibrate extends Fragment {
 		mEditLowerY = (EditText)v.findViewById(R.id.lower_y);
 		mEditLowerSize = (EditText)v.findViewById(R.id.lower_size);
 		mCameraExposure = (Spinner)v.findViewById(R.id.camera_exposure);
+		mMinRGBLevel = (EditText)v.findViewById(R.id.min_rgb);
 
 		// stop keyboard from showing immediately
 		GridLayout grid = (GridLayout)v.findViewById(R.id.control_grid);
@@ -498,6 +500,10 @@ public class FragmentCalibrate extends Fragment {
 			lparams.width = width/4;
 			child.setLayoutParams(lparams);
 		}
+
+		mMinRGBLevel.setText(Integer.toString(sharedPrefs.getInt(
+						getString(R.string.saved_min_rgb_for_live_pixel),
+						Integer.parseInt(getString(R.string.saved_min_rgb_for_live_pixel_default)))));
 
 		mCamera = ((MainActivity)getActivity()).mCamera;
 		if(mCamera != null) {
@@ -651,6 +657,13 @@ public class FragmentCalibrate extends Fragment {
 		editor.putInt(getString(R.string.saved_lower_x), mLowerShape.center.x);
 		editor.putInt(getString(R.string.saved_lower_y), mLowerShape.center.y);
 		editor.putInt(getString(R.string.saved_lower_radius), mLowerShape.radius);
+
+		int i = 0;
+		String s = mMinRGBLevel.getText().toString();
+		if(s != null)
+			i = Integer.parseInt(s);
+		editor.putInt(getString(R.string.saved_min_rgb_for_live_pixel), i);
+
 		editor.commit();
 	}
 
@@ -742,6 +755,7 @@ public class FragmentCalibrate extends Fragment {
 		setupEditTextListener(mEditLowerX);
 		setupEditTextListener(mEditLowerY);
 		setupEditTextListener(mEditLowerSize);
+		setupEditTextListener(mMinRGBLevel);
 	}
 
 	@Override

@@ -77,4 +77,10 @@
 	<string name="data_avg_r">avg_r</string>
 	<string name="data_avg_g">avg_g</string>
 	<string name="data_avg_b">avg_b</string>
+
+	<!-- Messages -->
+	<string name="confirm">Yes</string>
+	<string name="cancel">Cancel</string>
+	<string name="msg_write_despite_blank_secci">secci_depth is blank.  Write to CSV anyway?</string>
+	<string name="msg_csv_written">CSV Row Written!</string>
 </resources>

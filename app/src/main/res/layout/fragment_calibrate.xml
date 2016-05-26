@@ -115,11 +115,10 @@
 			android:gravity="center_vertical"
 			android:text="@string/calibrate_min_rgb" />
 
-		<Spinner
+		<com.example.m.divis.EditTextWithFont
 			android:id="@+id/min_rgb"
 			style="@style/GridTextView"
-			android:layout_height="48dp"
-			android:background="@drawable/bordered_background"
+			android:inputType="number"
 			android:layout_columnSpan="2"
 			android:text="1" />
 

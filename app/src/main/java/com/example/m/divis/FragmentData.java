@@ -2,6 +2,7 @@ package com.example.m.divis;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -15,6 +16,7 @@ import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
    
@@ -38,6 +40,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -279,13 +282,9 @@ public class FragmentData extends Fragment {
 		return sharedPrefs.getInt(getString(id), 0);
 	}
 
-	void writeToCsv()
+	void doWriteToCsv()
 	{
-		Log.d(TAG, "writeToCsv");
-		if(!accessExternalStorage())
-			return;
-
-		Log.d(TAG, "have access to external storage");
+		Log.d(TAG, "Writing to csv");
 
 		File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
 		if(!dir.exists()) {
@@ -335,9 +334,33 @@ public class FragmentData extends Fragment {
 					getI(R.string.saved_lower_radius) + "\n");
 			fileWriter.flush();
 			fileWriter.close();
+			Toast.makeText(getActivity(), getString(R.string.msg_csv_written),
+					Toast.LENGTH_SHORT).show();
 		} catch (java.io.IOException e) {
 			Log.d(TAG, e.toString());
+			Toast.makeText(getActivity(), e.toString(), Toast.LENGTH_LONG).show();
 			//Handle exception
+		}
+	}
+
+	void writeToCsv()
+	{
+		Log.d(TAG, "writeToCsv");
+		if(!accessExternalStorage())
+			return;
+
+		if(!mSecciDepth.getText().toString().isEmpty()) {
+			doWriteToCsv();
+		} else {
+			new AlertDialog.Builder(getActivity())
+				.setTitle("Title")
+				.setMessage(getString(R.string.msg_write_despite_blank_secci))
+				.setIcon(android.R.drawable.ic_dialog_alert)
+				.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						doWriteToCsv();
+					}})
+				.setNegativeButton(android.R.string.no, null).show();
 		}
 	}
 
@@ -421,7 +444,7 @@ public class FragmentData extends Fragment {
 		SharedPreferences.Editor editor = sharedPrefs.edit();
 		int i = 0;
 		String txt = mSecciDepth.getText().toString();
-		if(txt != null)
+		if(!txt.isEmpty())
 			i = Integer.parseInt(txt);
 		editor.putInt(getString(R.string.saved_secci_depth), i);
 		editor.commit();
@@ -446,12 +469,14 @@ public class FragmentData extends Fragment {
 
 	boolean pixelIsLive(int c)
 	{
-		return (Color.red(c) > 1 && Color.green(c) > 1 && Color.blue(c) > 1);
+		int min = sharedPrefs.getInt(getString(R.string.saved_min_rgb_for_live_pixel),
+				Integer.parseInt(getString(R.string.saved_min_rgb_for_live_pixel_default)));
+		return (Color.red(c) > min && Color.green(c) > min && Color.blue(c) > min);
 	}
 
 	boolean pixelIsWashed(int c)
 	{
-		return (Color.red(c) > 254 && Color.green(c) > 254 && Color.blue(c) > 254);
+		return (Color.red(c) > 254 || Color.green(c) > 254 || Color.blue(c) > 254);
 	}
 
 	boolean pixelIsData(int c)
