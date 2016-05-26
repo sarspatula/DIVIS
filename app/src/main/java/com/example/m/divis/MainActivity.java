@@ -317,8 +317,18 @@ public class MainActivity extends AppCompatActivity {
 		try {
 			int n = Camera.getNumberOfCameras();
 			// TODO: setting to select camera
-			if(n > 0)
-				c = Camera.open(0); // attempt to get a Camera instance
+			if(n > 0) {
+				int index_of_back_camera = 0;
+				Camera.CameraInfo info = new Camera.CameraInfo();
+				for(int i=0; i<n-1; i++) {
+					Camera.getCameraInfo(i, info);
+					if(info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+						index_of_back_camera = i;
+						break;
+					}
+				}
+				c = Camera.open(index_of_back_camera); // attempt to get a Camera instance
+			}
 		} catch (Exception e){
 			e.printStackTrace();
 		}

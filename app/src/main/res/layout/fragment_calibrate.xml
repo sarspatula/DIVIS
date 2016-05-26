@@ -103,8 +103,7 @@
 			style="@style/GridTextView"
 			android:layout_height="48dp"
 			android:background="@drawable/bordered_background"
-			android:layout_columnSpan="2"
-			android:text="0" />
+			android:layout_columnSpan="2" />
 
 		<com.example.m.divis.TextViewWithFont
 			style="@style/GridTextView"
