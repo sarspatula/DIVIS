@@ -29,17 +29,17 @@
 	<string name="saved_data_refresh_rate_default">1000</string>
 
 	<string name="saved_upper_x">saved_upper_x</string>
-	<string name="saved_upper_x_default">0</string>
+	<string name="saved_upper_x_default">100</string>
 	<string name="saved_upper_y">saved_upper_y</string>
-	<string name="saved_upper_y_default">0</string>
+	<string name="saved_upper_y_default">100</string>
 	<string name="saved_upper_radius">saved_upper_radius</string>
-	<string name="saved_upper_radius_default">0</string>
+	<string name="saved_upper_radius_default">50</string>
 	<string name="saved_lower_x">saved_lower_x</string>
-	<string name="saved_lower_x_default">0</string>
+	<string name="saved_lower_x_default">200</string>
 	<string name="saved_lower_y">saved_lower_y</string>
-	<string name="saved_lower_y_default">0</string>
+	<string name="saved_lower_y_default">100</string>
 	<string name="saved_lower_radius">saved_lower_radius</string>
-	<string name="saved_lower_radius_default">0</string>
+	<string name="saved_lower_radius_default">50</string>
 	<string name="saved_camera_exposure">saved_camera_exposure</string>
 	<string name="saved_camera_exposure_default">0</string>
 	<string name="saved_min_rgb_for_live_pixel">saved_min_rgb_for_live_pixel</string>
@@ -83,4 +83,5 @@
 	<string name="cancel">Cancel</string>
 	<string name="msg_write_despite_blank_secci">secci_depth is blank.  Write to CSV anyway?</string>
 	<string name="msg_csv_written">CSV Row Written!</string>
+	<string name="msg_no_data_yet">No Data Yet!</string>
 </resources>

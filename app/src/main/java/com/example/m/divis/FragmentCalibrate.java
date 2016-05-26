@@ -650,6 +650,9 @@ public class FragmentCalibrate extends Fragment {
 		editor.putInt(getString(R.string.saved_lower_y), mLowerShape.center.y);
 		editor.putInt(getString(R.string.saved_lower_radius), mLowerShape.radius);
 
+		editor.putString(getString(R.string.saved_camera_exposure),
+				mCameraExposure.getSelectedItem().toString());
+
 		int i = 0;
 		String s = mMinRGBLevel.getText().toString();
 		if(s != null)

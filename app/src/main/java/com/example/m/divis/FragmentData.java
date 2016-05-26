@@ -328,7 +328,12 @@ public class FragmentData extends Fragment {
 
 	void writeToCsv()
 	{
-		Log.d(TAG, "writeToCsv");
+		// no data captured yet
+		if(mTimestamp.getText().toString().isEmpty()) {
+			Toast.makeText(getActivity(), getString(R.string.msg_no_data_yet), Toast.LENGTH_SHORT).show();
+			return;
+		}
+
 		if(!accessExternalStorage())
 			return;
 
@@ -373,6 +378,7 @@ public class FragmentData extends Fragment {
 			timerInterval = sharedPrefs.getInt(
 					getString(R.string.saved_data_refresh_rate),
 					Integer.parseInt(getString(R.string.saved_data_refresh_rate_default)));
+			Log.d(TAG, "timerInterval: " + Integer.toString((int)timerInterval));
 			timerHandler.postDelayed(this, timerInterval);
 		}
 	};
