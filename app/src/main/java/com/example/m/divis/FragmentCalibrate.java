@@ -416,15 +416,25 @@ public class FragmentCalibrate extends Fragment {
 		}
 	}
 
-	boolean pixelWithinArea(Shape s, Point px)
+	boolean pixelWithinArea(Point center, int radius, Point px)
 	{
-		int dx = s.center.x - px.x;
-		int dy = s.center.y - px.y;
+		// fast check
+		if(center.x - radius > px.x || center.x + radius < px.x ||
+				center.y - radius > px.y || center.y + radius < px.y)
+			return false;
+
+		// slow check
+		int dx = center.x - px.x;
+		int dy = center.y - px.y;
 		int dist = (int)Math.floor(Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)));
-		Log.d(TAG, "pixelWithinArea: dist: " + dist);
-		if(dist > s.radius)
+		if(dist > radius)
 			return false;
 		return true;
+	}
+
+	boolean pixelWithinArea(Shape s, Point px)
+	{
+		return pixelWithinArea(s.center, s.radius, px);
 	}
 
 	// Transform coordinates from screen to that of the imageview's drawable

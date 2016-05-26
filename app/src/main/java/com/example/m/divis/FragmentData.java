@@ -486,6 +486,12 @@ public class FragmentData extends Fragment {
 
 	boolean pixelWithinArea(Point center, int radius, Point px)
 	{
+		// fast check
+		if(center.x - radius > px.x || center.x + radius < px.x ||
+				center.y - radius > px.y || center.y + radius < px.y)
+			return false;
+
+		// slow check
 		int dx = center.x - px.x;
 		int dy = center.y - px.y;
 		int dist = (int)Math.floor(Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)));
