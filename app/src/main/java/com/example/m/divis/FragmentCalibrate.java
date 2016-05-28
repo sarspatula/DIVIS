@@ -745,6 +745,20 @@ public class FragmentCalibrate extends Fragment {
 
 	void updateEditFieldsChanged()
 	{
+		// validate input
+		if(mEditUpperX.getText().toString().isEmpty())
+			mEditUpperX.setText(Integer.toString(mUpperShape.center.x));
+		if(mEditUpperY.getText().toString().isEmpty())
+			mEditUpperY.setText(Integer.toString(mUpperShape.center.y));
+		if(mEditUpperSize.getText().toString().isEmpty())
+			mEditUpperSize.setText(Integer.toString(mUpperShape.radius));
+		if(mEditLowerX.getText().toString().isEmpty())
+			mEditLowerX.setText(Integer.toString(mLowerShape.center.x));
+		if(mEditLowerY.getText().toString().isEmpty())
+			mEditLowerY.setText(Integer.toString(mLowerShape.center.y));
+		if(mEditLowerSize.getText().toString().isEmpty())
+			mEditLowerSize.setText(Integer.toString(mLowerShape.radius));
+
 		Point p = new Point();
 		p.x = Integer.parseInt(mEditUpperX.getText().toString());
 		p.y = Integer.parseInt(mEditUpperY.getText().toString());
