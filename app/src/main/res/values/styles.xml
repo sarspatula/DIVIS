@@ -22,8 +22,8 @@
 		<item name="android:singleLine">true</item>
 		<item name="android:textCursorDrawable">@null</item>
 		<item name="android:textColor">@color/colorTextPrimary</item>
-		<!--item name="android:textSize">@android:style/TextAppearance.Medium</item-->
-		<item name="android:textSize">18sp</item>
+		<!--item name="android:textSize">@android:style/TextAppearance.Small</item-->
+		<item name="android:textSize">14sp</item>
 	</style>
 
 	<style name="MyTextViewSecondary" parent="MyTextView">
@@ -31,7 +31,6 @@
 	</style>
 
 	<style name="GridTextView" parent="MyTextView">
-		<item name="android:layout_columnWeight">1</item>
 		<item name="android:layout_gravity">fill_horizontal</item>
 	</style>
 
@@ -45,7 +44,6 @@
 	</style>
 
 	<style name="GridSpinner" parent="MySpinner">
-		<item name="android:layout_columnWeight">1</item>
 		<item name="android:layout_gravity">fill_horizontal</item>
 	</style>
 
@@ -53,8 +51,8 @@
 		<item name="android:layout_width">match_parent</item>
 		<item name="android:layout_height">wrap_content</item>
 		<item name="android:textColor">@color/colorTextPrimary</item>
-		<!--item name="android:textSize">@android:style/TextAppearance.Medium</item-->
-		<item name="android:textSize">18sp</item>
+		<!--item name="android:textSize">@android:style/TextAppearance.Small</item-->
+		<item name="android:textSize">14sp</item>
 		<item name="android:gravity">center_vertical</item>
 		<item name="android:paddingStart">0sp</item>
 		<item name="android:paddingEnd">0sp</item>

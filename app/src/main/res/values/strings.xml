@@ -63,7 +63,8 @@
     <string name="calibrate_upper">upper</string>
     <string name="calibrate_lower">lower</string>
     <string name="calibrate_exposure">Camera Exposure</string>
-    <string name="calibrate_min_rgb">Minimum rgb for live pixel</string>
+    <!--string name="calibrate_min_rgb">Minimum rgb for live pixel</string-->
+    <string name="calibrate_min_rgb">Live RGB Min</string>
 
 	<!-- Data screen -->
 	<string name="btn_write_csv">Write to CSV</string>
@@ -84,4 +85,5 @@
 	<string name="msg_write_despite_blank_secci">secci_depth is blank.  Write to CSV anyway?</string>
 	<string name="msg_csv_written">CSV Row Written!</string>
 	<string name="msg_no_data_yet">No Data Yet!</string>
+	<string name="crash_toast_text">Crashed!  Sending log to Developer</string>
 </resources>

@@ -462,10 +462,14 @@ public class FragmentCalibrate extends Fragment {
 
 		// GridLayout's weight support requires android 5.0+
 		// workaround that for older devices
+		// BUG: rendered wrong on test device
 		GridLayout.LayoutParams lparams = (GridLayout.LayoutParams)mCameraExposure.getLayoutParams();
 		DisplayMetrics displaymetrics = new DisplayMetrics();
 		getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
 		int width = displaymetrics.widthPixels;
+		// size it to narrowest dimension
+		if(displaymetrics.heightPixels < width)
+			width = displaymetrics.heightPixels;
 		lparams.width = width/2;
 		mCameraExposure.setLayoutParams(lparams);
 
@@ -609,19 +613,25 @@ public class FragmentCalibrate extends Fragment {
 		mLowerShape.drawable.draw(c);
 
 		// captions
+		DisplayMetrics displaymetrics = new DisplayMetrics();
+		getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+		int screenHeight = displaymetrics.heightPixels;
+		int textHeight = (int)Math.ceil(14 * screenHeight / mCaptureHeight);
+
 		Paint paint = new Paint();
 		paint.setColor(Color.WHITE);
 		paint.setTypeface(MainActivity.typeface);
-		paint.setTextSize(20);
+		paint.setTextSize(textHeight);
 		int textWidth = (int)Math.ceil(paint.measureText("Upper"));
+
 		c.drawText("Upper",
 				mUpperShape.center.x - textWidth/2,
-				mUpperShape.center.y - mUpperShape.radius - 10,
+				mUpperShape.center.y - mUpperShape.radius - textHeight/2,
 				paint);
 		textWidth = (int)Math.ceil(paint.measureText("Lower"));
 		c.drawText("Lower",
 				mLowerShape.center.x - textWidth/2,
-				mLowerShape.center.y - mLowerShape.radius - 10,
+				mLowerShape.center.y - mLowerShape.radius - textHeight/2,
 				paint);
 
 		mDrawingImageView.setImageDrawable(new BitmapDrawable(getResources(), mDrawingBitmap));

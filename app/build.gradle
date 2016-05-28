@@ -1,35 +1,38 @@
 apply plugin: 'com.android.application'
 
 android {
-    signingConfigs {
-        config {
-            keyAlias 'default'
-            keyPassword 'chaosgit9'
-            storeFile file('/home/m/Studio_Projects/.key/key.jks')
-            storePassword 'chaosgit9'
-        }
-    }
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
-    defaultConfig {
-        applicationId "com.example.m.divis"
-        minSdkVersion 15
-        targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
-    }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
+	signingConfigs {
+		config {
+			keyAlias 'default'
+			keyPassword 'chaosgit9'
+			storeFile file('/home/m/Studio_Projects/.key/key.jks')
+			storePassword 'chaosgit9'
+		}
+	}
+	compileSdkVersion 23
+	buildToolsVersion '24.0.0 rc4'
+	defaultConfig {
+		applicationId "com.example.m.divis"
+		minSdkVersion 17
+		targetSdkVersion 23
+		versionCode 1
+		versionName "1.0"
+	}
+	buildTypes {
+		release {
+			minifyEnabled false
+			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+		}
+	}
+	productFlavors {
+	}
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.1.1'
-    compile 'com.android.support:design:23.1.1'
-    compile 'com.android.support:gridlayout-v7:22.2.1'
+	compile fileTree(include: ['*.jar'], dir: 'libs')
+	testCompile 'junit:junit:4.12'
+	compile 'com.android.support:appcompat-v7:23.1.1'
+	compile 'com.android.support:design:23.1.1'
+	compile 'com.android.support:gridlayout-v7:22.2.1'
+	compile 'ch.acra:acra:4.8.5'
 }

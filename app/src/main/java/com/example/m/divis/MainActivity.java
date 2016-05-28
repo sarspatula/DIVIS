@@ -203,6 +203,7 @@ public class MainActivity extends AppCompatActivity {
 			// determine largest capture size available
 			Camera.Parameters params = mCamera.getParameters();
 			List<Camera.Size> capture_sizes = params.getSupportedPictureSizes();
+			// array is sorted?
 			//mCaptureSize = capture_sizes.get(capture_sizes.size()-1);
 			int idx_of_largest = 0;
 			for(int i=0; i<capture_sizes.size(); i++) {
@@ -226,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
 				break;
 			}
 
-			params.setPictureSize(mCaptureWidth, mCaptureHeight);
+			params.setPictureSize(mCaptureSize.width, mCaptureSize.height);
 
 			Log.d(TAG, "Capture Size Set To " + mCaptureSize.width + "x" + mCaptureSize.height);
 			Log.d(TAG, "Capture Size (rot): " + mCaptureWidth + "x" + mCaptureHeight);
@@ -234,14 +235,21 @@ public class MainActivity extends AppCompatActivity {
 			// capture settings
 			// Configure image format. RGB_565 is the most common format.
 			List<Integer> formats = params.getSupportedPictureFormats();
+			// TODO: optimization: use raw rather than decompress jpeg, if available
 //			if (formats.contains(PixelFormat.RGB_565)) {
 //				Log.d(TAG, "Picture format: RGB_565");
 //				params.setPictureFormat(PixelFormat.RGB_565);
 //			} else {
 //				Log.d(TAG, "Picture format: JPEG");
-				params.setPictureFormat(PixelFormat.JPEG);
+//				params.setPictureFormat(PixelFormat.JPEG);
 //			}
+			if (formats.contains(PixelFormat.JPEG))
+				params.setPictureFormat(PixelFormat.JPEG);
 			params.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+			if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE))
+				params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+			else if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_FIXED))
+				params.setFocusMode(Camera.Parameters.FOCUS_MODE_FIXED);
 			mCamera.setParameters(params);
 		}
 		return qOpened;

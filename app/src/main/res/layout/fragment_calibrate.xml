@@ -17,16 +17,16 @@
 		-->
 	<GridLayout
 		android:id="@+id/control_grid"
-		android:layout_width="match_parent"
+		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
+		android:layout_centerHorizontal="true"
 		android:layout_alignParentBottom="true"
 		android:columnCount="4"
 		android:rowCount="5"
 		android:orientation="horizontal">
 
 		<com.example.m.divis.TextViewWithFont
-			style="@style/GridTextView"
-			android:layout_columnWeight="1" />
+			style="@style/GridTextView" />
 
 		<com.example.m.divis.TextViewWithFont
 			style="@style/GridTextView"
@@ -94,7 +94,6 @@
 			android:background="@drawable/bordered_background"
 			android:layout_height="48dp"
 			android:layout_columnSpan="2"
-			android:layout_weight="1"
 			android:gravity="center_vertical"
 			android:text="@string/calibrate_exposure" />
 
@@ -110,7 +109,6 @@
 			android:background="@drawable/bordered_background"
 			android:layout_height="48dp"
 			android:layout_columnSpan="2"
-			android:layout_weight="1"
 			android:gravity="center_vertical"
 			android:text="@string/calibrate_min_rgb" />
 

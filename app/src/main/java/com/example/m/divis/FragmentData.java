@@ -90,6 +90,7 @@ public class FragmentData extends Fragment {
 
 	String sTime;
 
+	// TODO: optimization: use raw instead of jpeg when available
 	private RawCallback mRawCallback;
 	class RawCallback implements Camera.ShutterCallback, Camera.PictureCallback {
 
@@ -153,9 +154,11 @@ public class FragmentData extends Fragment {
 			lowerGAvg = 0;
 			lowerBAvg = 0;
 
+			int upper_radius_squared = upperRadius*upperRadius;
+			int lower_radius_squared = lowerRadius*lowerRadius;
 			for(int i=0; i<h; i++) {
 				for(int j=0; j<w; j++) {
-					if(pixelWithinArea(upperCenter, upperRadius, new Point(j, i))) {
+					if(pixelWithinArea(upperCenter, upperRadius, upper_radius_squared, new Point(j, i))) {
 						int c = bmp.getPixel(j, i);
 						if(pixelIsLive(c))
 							upperLive++;
@@ -169,7 +172,7 @@ public class FragmentData extends Fragment {
 						}
 					}
 
-					if(pixelWithinArea(lowerCenter, lowerRadius, new Point(j, i))) {
+					if(pixelWithinArea(lowerCenter, lowerRadius, lower_radius_squared, new Point(j, i))) {
 						int c = bmp.getPixel(j, i);
 						if(pixelIsLive(c))
 							lowerLive++;
@@ -218,6 +221,9 @@ public class FragmentData extends Fragment {
 			// takePicture has finished, now safe to resume the preview
 			MainActivity act = (MainActivity)getActivity();
 //			act.mCamera.startPreview();
+
+			// schedule next timer
+			timerHandler.postDelayed(timerRunnable, timerInterval);
 		}
 	}
 
@@ -358,28 +364,27 @@ public class FragmentData extends Fragment {
 	Runnable timerRunnable = new Runnable() {
 		@Override
 		public void run() {
+			Log.d(TAG, "Timer Callback");
 			MainActivity act = (MainActivity)getActivity();
-			if(act.mCamera != null && act.mViewPager.getCurrentItem() == 2) {
+			if(act.mViewPager.getCurrentItem() != 2)
+				return;
+			if(act.mCamera != null) {
 				SurfaceView preview = ((FragmentCalibrate)act.mSectionsPagerAdapter.getItem(1)).mPreview;
+
 				// callbacks: shutter, raw, post view, jpeg
 				Log.d(TAG, "Taking a picture!");
 				try {
-					act.mCamera.takePicture(mRawCallback, mRawCallback, null, mJpegCallback);
+					act.mCamera.takePicture(null, null, null, mJpegCallback);
 				} catch(Exception e) {
 					// "E/Camera: Error 100" and "Camera service died!"
-					// bug in Android, may require restarting the phone?
-					// Attempting quick workaround
+					// NOTE: fixed by not re-enabling preview until calibrate
+					// screen shown.
 					Log.d(TAG, e.toString());
 					Toast.makeText(getActivity(), e.toString(), Toast.LENGTH_LONG).show();
-					getActivity().recreate();
 				}
+			} else {
+				timerHandler.postDelayed(this, timerInterval);
 			}
-
-			timerInterval = sharedPrefs.getInt(
-					getString(R.string.saved_data_refresh_rate),
-					Integer.parseInt(getString(R.string.saved_data_refresh_rate_default)));
-			Log.d(TAG, "timerInterval: " + Integer.toString((int)timerInterval));
-			timerHandler.postDelayed(this, timerInterval);
 		}
 	};
 
@@ -433,8 +438,26 @@ public class FragmentData extends Fragment {
 			}
 		});
 
-		setupTimer();
-		
+		// setup timer
+		((MainActivity)getActivity()).mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+			@Override
+			public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) { } 
+
+			@Override
+			public void onPageSelected(int position) {
+				MainActivity act = (MainActivity)getActivity();
+				if(position == 2) {
+					timerHandler.removeCallbacks(timerRunnable);
+					timerHandler.postDelayed(timerRunnable, 1000);
+				} else {
+					timerHandler.removeCallbacks(timerRunnable);
+				}
+			}
+
+			@Override
+			public void onPageScrollStateChanged(int state) { }
+		});
+
 		return v;
 	}
 
@@ -459,13 +482,6 @@ public class FragmentData extends Fragment {
 	@Override
 	public void onResume() {
 		super.onResume();
-		setupTimer();
-	}
-
-	void setupTimer()
-	{
-		timerHandler.removeCallbacks(timerRunnable);
-		timerHandler.postDelayed(timerRunnable, 1000);
 	}
 
 	boolean pixelIsLive(int c)
@@ -485,7 +501,7 @@ public class FragmentData extends Fragment {
 		return pixelIsLive(c) && !pixelIsWashed(c);
 	}
 
-	boolean pixelWithinArea(Point center, int radius, Point px)
+	boolean pixelWithinArea(Point center, int radius, int radius_squared, Point px)
 	{
 		// fast check
 		if(center.x - radius > px.x || center.x + radius < px.x ||
@@ -495,8 +511,8 @@ public class FragmentData extends Fragment {
 		// slow check
 		int dx = center.x - px.x;
 		int dy = center.y - px.y;
-		int dist = (int)Math.floor(Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)));
-		if(dist > radius)
+		int dist_squared = (int)Math.floor(Math.pow(dx, 2) + Math.pow(dy, 2));
+		if(dist_squared > radius_squared)
 			return false;
 		return true;
 	}
