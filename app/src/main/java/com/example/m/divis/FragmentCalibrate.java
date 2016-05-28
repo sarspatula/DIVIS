@@ -93,6 +93,8 @@ public class FragmentCalibrate extends Fragment {
 	private EditText mEditLowerY;
 	private EditText mEditLowerSize;
 	private Spinner mCameraExposure;
+	private Spinner mCameraResolution;
+//	private TextView mCameraPreviewResolution;
 	private EditText mMinRGBLevel;
 
 	Camera mCamera;
@@ -111,7 +113,7 @@ public class FragmentCalibrate extends Fragment {
 		private Context mContext;
 
 		// Camera Sizing (For rotation, orientation changes)
-		private Camera.Size mPreviewSize;
+		public Camera.Size mPreviewSize;
 
 		// List of supported preview sizes
 		private List<Camera.Size> mSupportedPreviewSizes;
@@ -223,6 +225,7 @@ public class FragmentCalibrate extends Fragment {
 				if(mPreviewSize != null) {
 					Camera.Size previewSize = mPreviewSize;
 					parameters.setPreviewSize(previewSize.width, previewSize.height);
+//					mCameraPreviewResolution.setText("" + previewSize.width + "x" + previewSize.height);
 				}
 
 				mCamera.setParameters(parameters);
@@ -248,8 +251,10 @@ public class FragmentCalibrate extends Fragment {
 
 			if (mSupportedPreviewSizes != null){
 				mPreviewSize = getOptimalPreviewSize(mSupportedPreviewSizes, width, height);
-				if(mPreviewSize != null)
+				if(mPreviewSize != null) {
 					Log.d(TAG, "Optimal Preview Size: " + mPreviewSize.width + "x" + mPreviewSize.height);
+//					mCameraPreviewResolution.setText("" + mPreviewSize.width + "x" + mPreviewSize.height);
+				}
 			}
 		}
 
@@ -357,6 +362,13 @@ public class FragmentCalibrate extends Fragment {
 
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
+			/*
+			// FIXME
+			if(mPreview.mPreviewSize != null) {
+				mCameraPreviewResolution.setText("" + mPreview.mPreviewSize.width + "x" + mPreview.mPreviewSize.height);
+			}
+			*/
+
 			boolean handledEvent = false;
 			PointF curr = new PointF(event.getX(), event.getY());
 
@@ -455,6 +467,8 @@ public class FragmentCalibrate extends Fragment {
 		mEditLowerY = (EditText)v.findViewById(R.id.lower_y);
 		mEditLowerSize = (EditText)v.findViewById(R.id.lower_size);
 		mCameraExposure = (Spinner)v.findViewById(R.id.camera_exposure);
+		mCameraResolution = (Spinner)v.findViewById(R.id.camera_resolution);
+//		mCameraPreviewResolution = (TextView)v.findViewById(R.id.camera_preview_resolution);
 		mMinRGBLevel = (EditText)v.findViewById(R.id.min_rgb);
 
 		mDrawingImageView = (ImageView)v.findViewById(R.id.canvas);
@@ -464,6 +478,7 @@ public class FragmentCalibrate extends Fragment {
 		// workaround that for older devices
 		// BUG: rendered wrong on test device
 		GridLayout.LayoutParams lparams = (GridLayout.LayoutParams)mCameraExposure.getLayoutParams();
+		GridLayout.LayoutParams lparams2 = (GridLayout.LayoutParams)mCameraResolution.getLayoutParams();
 		DisplayMetrics displaymetrics = new DisplayMetrics();
 		getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
 		int width = displaymetrics.widthPixels;
@@ -471,7 +486,9 @@ public class FragmentCalibrate extends Fragment {
 		if(displaymetrics.heightPixels < width)
 			width = displaymetrics.heightPixels;
 		lparams.width = width/2;
+		lparams2.width = width/2;
 		mCameraExposure.setLayoutParams(lparams);
+		mCameraResolution.setLayoutParams(lparams2);
 
 		GridLayout grid = (GridLayout)v.findViewById(R.id.control_grid);
 		for (int i = grid.getChildCount() - 3; i >= 0; i--) {
@@ -491,11 +508,15 @@ public class FragmentCalibrate extends Fragment {
 			mCaptureHeight = ((MainActivity)getActivity()).mCaptureHeight;
 			setupCameraPreview(getActivity().getBaseContext());
 			setupCameraExposureSpinner();
+			setupCameraResolutionSpinner();
 			setupControlShapes();
 			setupControlOverlay();
 		}
 
 		// takePicture stops preview, restart when calibrate screen shown
+		// DISABLED: startPreview must be started before takePicture is called,
+		// so Data screen will restart preview after each capture.
+		/*
 		((MainActivity)getActivity()).mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 			@Override
 			public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) { } 
@@ -512,6 +533,10 @@ public class FragmentCalibrate extends Fragment {
 			@Override
 			public void onPageScrollStateChanged(int state) { }
 		});
+		*/
+
+		// hide keyboard on start
+		getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
 		return v;
 	}
@@ -532,6 +557,7 @@ public class FragmentCalibrate extends Fragment {
 		mCaptureHeight = act.mCaptureHeight;
 		setupCameraPreview(act);
 		setupCameraExposureSpinner();
+		setupCameraResolutionSpinner();
 		setupControlShapes();
 		setupControlOverlay();
 	}
@@ -561,6 +587,57 @@ public class FragmentCalibrate extends Fragment {
 				int idx = position + min;
 				params.setExposureCompensation(idx);
 				mCamera.setParameters(params);
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+
+			   // sometimes you need nothing here
+			}
+		});
+	}
+
+	void setupCameraResolutionSpinner()
+	{
+		ArrayAdapter<String> adapter = new ArrayAdapter(getActivity(), R.layout.spinner_item);
+		Camera.Parameters params = mCamera.getParameters();
+		List<Camera.Size> capture_sizes = params.getSupportedPictureSizes();
+		for(int i=0; i<capture_sizes.size(); i++) {
+			adapter.add(capture_sizes.get(i).width + "x" +
+					capture_sizes.get(i).height);
+		}
+
+		// default highest
+		int savedResolutionIndex = sharedPrefs.getInt(
+				getString(R.string.saved_camera_resolution_index),
+				Integer.parseInt(getString(R.string.saved_camera_resolution_index_default)));
+		if(savedResolutionIndex > capture_sizes.size()-1) {
+			savedResolutionIndex = capture_sizes.size()-1;
+			SharedPreferences.Editor editor = sharedPrefs.edit();
+			editor.putInt(
+					getString(R.string.saved_camera_resolution_index),
+					savedResolutionIndex);
+			editor.commit();
+		}
+
+		adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+		mCameraResolution.setAdapter(adapter);
+		mCameraResolution.setSelection(savedResolutionIndex);
+
+		mCameraResolution.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+				int savedResolutionIndex = sharedPrefs.getInt(
+						getString(R.string.saved_camera_resolution_index),
+						Integer.parseInt(getString(R.string.saved_camera_resolution_index_default)));
+				if(savedResolutionIndex != position) {
+					SharedPreferences.Editor editor = sharedPrefs.edit();
+					editor.putInt(
+							getString(R.string.saved_camera_resolution_index),
+							position);
+					editor.commit();
+					getActivity().recreate();
+				}
 			}
 
 			@Override
@@ -616,7 +693,8 @@ public class FragmentCalibrate extends Fragment {
 		DisplayMetrics displaymetrics = new DisplayMetrics();
 		getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
 		int screenHeight = displaymetrics.heightPixels;
-		int textHeight = (int)Math.ceil(14 * screenHeight / mCaptureHeight);
+//		int textHeight = (int)Math.ceil(14 * screenHeight / mCaptureHeight);
+		int textHeight = mCaptureHeight / 20;
 
 		Paint paint = new Paint();
 		paint.setColor(Color.WHITE);
@@ -632,6 +710,14 @@ public class FragmentCalibrate extends Fragment {
 		c.drawText("Lower",
 				mLowerShape.center.x - textWidth/2,
 				mLowerShape.center.y - mLowerShape.radius - textHeight/2,
+				paint);
+
+		MainActivity act = (MainActivity)getActivity();
+		Camera.Parameters params = act.mCamera.getParameters();
+		Camera.Size sz = params.getPreviewSize();
+		c.drawText(sz.width + "x" + sz.height,
+				0,
+				textHeight,
 				paint);
 
 		mDrawingImageView.setImageDrawable(new BitmapDrawable(getResources(), mDrawingBitmap));

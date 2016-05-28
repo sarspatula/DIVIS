@@ -219,8 +219,9 @@ public class FragmentData extends Fragment {
 			mAvgBLower.setText(Integer.toString(lowerBAvg));
 
 			// takePicture has finished, now safe to resume the preview
+			// NOTE: preview must be started before takePicture
 			MainActivity act = (MainActivity)getActivity();
-//			act.mCamera.startPreview();
+			act.mCamera.startPreview();
 
 			// schedule next timer
 			timerHandler.postDelayed(timerRunnable, timerInterval);

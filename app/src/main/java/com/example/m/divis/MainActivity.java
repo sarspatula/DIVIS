@@ -3,6 +3,7 @@ package com.example.m.divis;
 import android.Manifest;
 import android.app.ActionBar;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
 import android.graphics.Typeface;
@@ -42,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
 	private static final String TAG = "DIVISMainActivity";
 	private static final int MY_PERMISSIONS_REQUEST_CAMERA = 42;
 
+	SharedPreferences sharedPrefs;
+
 	// custom font Calibri.ttf
 	public static Typeface typeface;// = Typeface.createFromAsset(getContext().getAssets(), "fonts/Calibri.ttf");
 
@@ -73,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		sharedPrefs = getPreferences(Context.MODE_PRIVATE);
+
 		// for hiding titlebar
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 	    getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -200,18 +205,21 @@ public class MainActivity extends AppCompatActivity {
 				mCamera.enableShutterSound(false);
 			}
 
-			// determine largest capture size available
+			// determine capture size
 			Camera.Parameters params = mCamera.getParameters();
 			List<Camera.Size> capture_sizes = params.getSupportedPictureSizes();
-			// array is sorted?
-			//mCaptureSize = capture_sizes.get(capture_sizes.size()-1);
-			int idx_of_largest = 0;
-			for(int i=0; i<capture_sizes.size(); i++) {
-				Log.d(TAG, "Capture Size: " + capture_sizes.get(i).width + "x" + capture_sizes.get(i).height);
-				if(capture_sizes.get(idx_of_largest).height < capture_sizes.get(i).height)
-					idx_of_largest = i;
+			int savedResolutionIndex = sharedPrefs.getInt(
+					getString(R.string.saved_camera_resolution_index),
+					Integer.parseInt(getString(R.string.saved_camera_resolution_index_default)));
+			if(savedResolutionIndex > capture_sizes.size()-1) {
+				savedResolutionIndex = capture_sizes.size()-1;
+				SharedPreferences.Editor editor = sharedPrefs.edit();
+				editor.putInt(
+						getString(R.string.saved_camera_resolution_index),
+						savedResolutionIndex);
+				editor.commit();
 			}
-			mCaptureSize = capture_sizes.get(idx_of_largest);
+			mCaptureSize = capture_sizes.get(savedResolutionIndex);
 
 			// adjust by orientation
 			Display display = ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();

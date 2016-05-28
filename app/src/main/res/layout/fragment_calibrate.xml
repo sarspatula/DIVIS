@@ -24,6 +24,7 @@
 		android:columnCount="4"
 		android:rowCount="5"
 		android:orientation="horizontal">
+		<!-- android:focusableInTouchMode="true" -->
 
 		<com.example.m.divis.TextViewWithFont
 			style="@style/GridTextView" />
@@ -99,6 +100,35 @@
 
 		<Spinner
 			android:id="@+id/camera_exposure"
+			style="@style/GridTextView"
+			android:layout_height="48dp"
+			android:background="@drawable/bordered_background"
+			android:layout_columnSpan="2" />
+
+		<!--com.example.m.divis.TextViewWithFont
+			style="@style/GridTextView"
+			android:background="@drawable/bordered_background"
+			android:layout_height="48dp"
+			android:layout_columnSpan="2"
+			android:text="@string/calibrate_preview_resolution" />
+
+		<com.example.m.divis.TextViewWithFont
+			android:id="@+id/camera_preview_resolution"
+			style="@style/GridTextView"
+			android:background="@drawable/bordered_background"
+			android:layout_height="48dp"
+			android:layout_columnSpan="2" /-->
+
+		<com.example.m.divis.TextViewWithFont
+			style="@style/GridTextView"
+			android:background="@drawable/bordered_background"
+			android:layout_height="48dp"
+			android:layout_columnSpan="2"
+			android:gravity="center_vertical"
+			android:text="@string/calibrate_resolution" />
+
+		<Spinner
+			android:id="@+id/camera_resolution"
 			style="@style/GridTextView"
 			android:layout_height="48dp"
 			android:background="@drawable/bordered_background"

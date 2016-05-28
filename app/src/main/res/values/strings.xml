@@ -42,6 +42,8 @@
 	<string name="saved_lower_radius_default">50</string>
 	<string name="saved_camera_exposure">saved_camera_exposure</string>
 	<string name="saved_camera_exposure_default">0</string>
+	<string name="saved_camera_resolution_index">99</string>
+	<string name="saved_camera_resolution_index_default">99</string>
 	<string name="saved_min_rgb_for_live_pixel">saved_min_rgb_for_live_pixel</string>
 	<string name="saved_min_rgb_for_live_pixel_default">1</string>
 
@@ -63,8 +65,10 @@
     <string name="calibrate_upper">upper</string>
     <string name="calibrate_lower">lower</string>
     <string name="calibrate_exposure">Camera Exposure</string>
+    <string name="calibrate_preview_resolution">Preview Resolution</string>
+    <string name="calibrate_resolution">Capture Resolution</string>
     <!--string name="calibrate_min_rgb">Minimum rgb for live pixel</string-->
-    <string name="calibrate_min_rgb">Live RGB Min</string>
+    <string name="calibrate_min_rgb">Live RGB Minimum</string>
 
 	<!-- Data screen -->
 	<string name="btn_write_csv">Write to CSV</string>
