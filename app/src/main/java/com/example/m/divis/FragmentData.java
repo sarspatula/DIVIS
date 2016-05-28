@@ -119,113 +119,137 @@ public class FragmentData extends Fragment {
 		@Override
 		public void onPictureTaken(byte[] jpeg, Camera camera) {
 			Log.d(TAG, "onPictureTaken (Jpeg)");
-			Bitmap bmp = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.length);
+			class AnalyzerTask implements Runnable {
+				byte[] jpeg;
+				AnalyzerTask(byte[] jpeg) { this.jpeg = jpeg; }
+				public void run() {
+					analyzeImage(jpeg);
+				}
+			}
+			Thread t = new Thread(new AnalyzerTask(jpeg));
+			t.start();
+		}
+	}
 
-			int w = bmp.getWidth();
-			int h = bmp.getHeight();
+	void updateUi()
+	{
+		mTimestamp.setText(sTime);
+//			mSecciDepth.setText();
+		mLivePixelsUpper.setText(Integer.toString(upperLive));
+		mWashedPixelsUpper.setText(Integer.toString(upperWashed));
+		mDataPixelsUpper.setText(Integer.toString(upperData));
+		mAvgRUpper.setText(Integer.toString(upperRAvg));
+		mAvgGUpper.setText(Integer.toString(upperGAvg));
+		mAvgBUpper.setText(Integer.toString(upperBAvg));
 
-			Point upperCenter = new Point(
-					sharedPrefs.getInt(getString(R.string.saved_upper_x), 100),
-					sharedPrefs.getInt(getString(R.string.saved_upper_y), 100));
-			int upperRadius = sharedPrefs.getInt(getString(R.string.saved_upper_radius), 100);
+		mLivePixelsLower.setText(Integer.toString(lowerLive));
+		mWashedPixelsLower.setText(Integer.toString(lowerWashed));
+		mDataPixelsLower.setText(Integer.toString(lowerData));
+		mAvgRLower.setText(Integer.toString(lowerRAvg));
+		mAvgGLower.setText(Integer.toString(lowerGAvg));
+		mAvgBLower.setText(Integer.toString(lowerBAvg));
+	}
 
-			Point lowerCenter = new Point(
-					sharedPrefs.getInt(getString(R.string.saved_lower_x), 300),
-					sharedPrefs.getInt(getString(R.string.saved_lower_y), 100));
-			int lowerRadius = sharedPrefs.getInt(getString(R.string.saved_lower_radius), 100);
+	// run in separate thread
+	void analyzeImage(byte[] jpeg)
+	{
+		Bitmap bmp = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.length);
 
-			upperLive = 0;
-			upperWashed = 0;
-			upperData = 0;
-			upperRTotal = 0;
-			upperGTotal = 0;
-			upperBTotal = 0;
-			upperRAvg = 0;
-			upperGAvg = 0;
-			upperBAvg = 0;
+		int w = bmp.getWidth();
+		int h = bmp.getHeight();
 
-			lowerLive = 0;
-			lowerWashed = 0;
-			lowerData = 0;
-			lowerRTotal = 0;
-			lowerGTotal = 0;
-			lowerBTotal = 0;
-			lowerRAvg = 0;
-			lowerGAvg = 0;
-			lowerBAvg = 0;
+		Point upperCenter = new Point(
+				sharedPrefs.getInt(getString(R.string.saved_upper_x), 100),
+				sharedPrefs.getInt(getString(R.string.saved_upper_y), 100));
+		int upperRadius = sharedPrefs.getInt(getString(R.string.saved_upper_radius), 100);
 
-			int upper_radius_squared = upperRadius*upperRadius;
-			int lower_radius_squared = lowerRadius*lowerRadius;
-			for(int i=0; i<h; i++) {
-				for(int j=0; j<w; j++) {
-					if(pixelWithinArea(upperCenter, upperRadius, upper_radius_squared, new Point(j, i))) {
-						int c = bmp.getPixel(j, i);
-						if(pixelIsLive(c))
-							upperLive++;
-						if(pixelIsWashed(c))
-							upperWashed++;
-						if(pixelIsData(c)) {
-							upperData++;
-							upperRTotal += Color.red(c);
-							upperGTotal += Color.green(c);
-							upperBTotal += Color.blue(c);
-						}
+		Point lowerCenter = new Point(
+				sharedPrefs.getInt(getString(R.string.saved_lower_x), 300),
+				sharedPrefs.getInt(getString(R.string.saved_lower_y), 100));
+		int lowerRadius = sharedPrefs.getInt(getString(R.string.saved_lower_radius), 100);
+
+		upperLive = 0;
+		upperWashed = 0;
+		upperData = 0;
+		upperRTotal = 0;
+		upperGTotal = 0;
+		upperBTotal = 0;
+		upperRAvg = 0;
+		upperGAvg = 0;
+		upperBAvg = 0;
+
+		lowerLive = 0;
+		lowerWashed = 0;
+		lowerData = 0;
+		lowerRTotal = 0;
+		lowerGTotal = 0;
+		lowerBTotal = 0;
+		lowerRAvg = 0;
+		lowerGAvg = 0;
+		lowerBAvg = 0;
+
+		int upper_radius_squared = upperRadius*upperRadius;
+		int lower_radius_squared = lowerRadius*lowerRadius;
+		for(int i=0; i<h; i++) {
+			for(int j=0; j<w; j++) {
+				if(pixelWithinArea(upperCenter, upperRadius, upper_radius_squared, new Point(j, i))) {
+					int c = bmp.getPixel(j, i);
+					if(pixelIsLive(c))
+						upperLive++;
+					if(pixelIsWashed(c))
+						upperWashed++;
+					if(pixelIsData(c)) {
+						upperData++;
+						upperRTotal += Color.red(c);
+						upperGTotal += Color.green(c);
+						upperBTotal += Color.blue(c);
 					}
+				}
 
-					if(pixelWithinArea(lowerCenter, lowerRadius, lower_radius_squared, new Point(j, i))) {
-						int c = bmp.getPixel(j, i);
-						if(pixelIsLive(c))
-							lowerLive++;
-						if(pixelIsWashed(c))
-							lowerWashed++;
-						if(pixelIsData(c)) {
-							lowerData++;
-							lowerRTotal += Color.red(c);
-							lowerGTotal += Color.green(c);
-							lowerBTotal += Color.blue(c);
-						}
+				if(pixelWithinArea(lowerCenter, lowerRadius, lower_radius_squared, new Point(j, i))) {
+					int c = bmp.getPixel(j, i);
+					if(pixelIsLive(c))
+						lowerLive++;
+					if(pixelIsWashed(c))
+						lowerWashed++;
+					if(pixelIsData(c)) {
+						lowerData++;
+						lowerRTotal += Color.red(c);
+						lowerGTotal += Color.green(c);
+						lowerBTotal += Color.blue(c);
 					}
 				}
 			}
-
-			if(lowerData > 0 && upperData > 0) {
-				upperRAvg = upperRTotal / upperData;
-				upperGAvg = upperGTotal / upperData;
-				upperBAvg = upperBTotal / upperData;
-
-				lowerRAvg = lowerRTotal / lowerData;
-				lowerGAvg = lowerGTotal / lowerData;
-				lowerBAvg = lowerBTotal / lowerData;
-			}
-
-			Time now = new Time();
-			now.setToNow();
-			sTime = now.format("%Y_%m_%d_%H_%M_%S");
-
-			mTimestamp.setText(sTime);
-//			mSecciDepth.setText();
-			mLivePixelsUpper.setText(Integer.toString(upperLive));
-			mWashedPixelsUpper.setText(Integer.toString(upperWashed));
-			mDataPixelsUpper.setText(Integer.toString(upperData));
-			mAvgRUpper.setText(Integer.toString(upperRAvg));
-			mAvgGUpper.setText(Integer.toString(upperGAvg));
-			mAvgBUpper.setText(Integer.toString(upperBAvg));
-
-			mLivePixelsLower.setText(Integer.toString(lowerLive));
-			mWashedPixelsLower.setText(Integer.toString(lowerWashed));
-			mDataPixelsLower.setText(Integer.toString(lowerData));
-			mAvgRLower.setText(Integer.toString(lowerRAvg));
-			mAvgGLower.setText(Integer.toString(lowerGAvg));
-			mAvgBLower.setText(Integer.toString(lowerBAvg));
-
-			// takePicture has finished, now safe to resume the preview
-			// NOTE: preview must be started before takePicture
-			MainActivity act = (MainActivity)getActivity();
-			act.mCamera.startPreview();
-
-			// schedule next timer
-			timerHandler.postDelayed(timerRunnable, timerInterval);
 		}
+
+		if(lowerData > 0 && upperData > 0) {
+			upperRAvg = upperRTotal / upperData;
+			upperGAvg = upperGTotal / upperData;
+			upperBAvg = upperBTotal / upperData;
+
+			lowerRAvg = lowerRTotal / lowerData;
+			lowerGAvg = lowerGTotal / lowerData;
+			lowerBAvg = lowerBTotal / lowerData;
+		}
+
+		Time now = new Time();
+		now.setToNow();
+		sTime = now.format("%Y_%m_%d_%H_%M_%S");
+
+		MainActivity act = (MainActivity)getActivity();
+		act.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				updateUi();
+			}
+		});
+
+		// takePicture has finished, now safe to resume the preview
+		// NOTE: preview must be started before takePicture
+		act.mCamera.startPreview();
+
+		// schedule next timer
+		timerHandler.postDelayed(timerRunnable, timerInterval);
 	}
 
 	boolean accessExternalStorage()
