@@ -1,6 +1,7 @@
 package com.example.m.divis;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -8,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.os.Environment;
@@ -39,6 +41,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +52,7 @@ public class FragmentData extends Fragment {
 	private static final String TAG = "DIVISFragmentData";
 	private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
 	SharedPreferences sharedPrefs;
+	private MainActivity mActivity;
 
 	// text views
 	private TextView mTimestamp;
@@ -66,6 +70,10 @@ public class FragmentData extends Fragment {
 	private TextView mAvgBUpper;
 	private TextView mAvgBLower;
 	private Button mButtonSave;
+
+	// preview capture
+	private ImageView mImagePreview;
+	private Bitmap mLastBitmap = null;
 
 	// data
 	int upperLive = 0;
@@ -133,30 +141,50 @@ public class FragmentData extends Fragment {
 
 	void updateUi()
 	{
-		mTimestamp.setText(sTime);
-//			mSecciDepth.setText();
-		mLivePixelsUpper.setText(Integer.toString(upperLive));
-		mWashedPixelsUpper.setText(Integer.toString(upperWashed));
-		mDataPixelsUpper.setText(Integer.toString(upperData));
-		mAvgRUpper.setText(Integer.toString(upperRAvg));
-		mAvgGUpper.setText(Integer.toString(upperGAvg));
-		mAvgBUpper.setText(Integer.toString(upperBAvg));
+		if(isAdded()) {
+			if(mLastBitmap != null) {
+				mImagePreview.setImageBitmap(mLastBitmap);
+			}
+			mTimestamp.setText(sTime);
+	//			mSecciDepth.setText();
+			mLivePixelsUpper.setText(Integer.toString(upperLive));
+			mWashedPixelsUpper.setText(Integer.toString(upperWashed));
+			mDataPixelsUpper.setText(Integer.toString(upperData));
+			mAvgRUpper.setText(Integer.toString(upperRAvg));
+			mAvgGUpper.setText(Integer.toString(upperGAvg));
+			mAvgBUpper.setText(Integer.toString(upperBAvg));
 
-		mLivePixelsLower.setText(Integer.toString(lowerLive));
-		mWashedPixelsLower.setText(Integer.toString(lowerWashed));
-		mDataPixelsLower.setText(Integer.toString(lowerData));
-		mAvgRLower.setText(Integer.toString(lowerRAvg));
-		mAvgGLower.setText(Integer.toString(lowerGAvg));
-		mAvgBLower.setText(Integer.toString(lowerBAvg));
+			mLivePixelsLower.setText(Integer.toString(lowerLive));
+			mWashedPixelsLower.setText(Integer.toString(lowerWashed));
+			mDataPixelsLower.setText(Integer.toString(lowerData));
+			mAvgRLower.setText(Integer.toString(lowerRAvg));
+			mAvgGLower.setText(Integer.toString(lowerGAvg));
+			mAvgBLower.setText(Integer.toString(lowerBAvg));
+		}
+	}
+
+	Bitmap rotate(Bitmap bitmap, int degree) {
+		int w = bitmap.getWidth();
+		int h = bitmap.getHeight();
+
+		Matrix mtx = new Matrix();
+		mtx.postRotate(degree);
+
+		return Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, true);
 	}
 
 	// run in separate thread
 	void analyzeImage(byte[] jpeg)
 	{
-		Bitmap bmp = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.length);
+		// Bugfix: not rotated to match preview
+		Bitmap bmpPreRotate = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.length);
+		int angleToRotate = mActivity.mCameraRotation;
+		angleToRotate = angleToRotate + 180;
+		Bitmap bmp = rotate(bmpPreRotate, angleToRotate);
 
 		int w = bmp.getWidth();
 		int h = bmp.getHeight();
+		Log.d(TAG, "analyzeImage: " + w + "x" + h);
 
 		Point upperCenter = new Point(
 				sharedPrefs.getInt(getString(R.string.saved_upper_x), 100),
@@ -236,8 +264,9 @@ public class FragmentData extends Fragment {
 		now.setToNow();
 		sTime = now.format("%Y_%m_%d_%H_%M_%S");
 
-		MainActivity act = (MainActivity)getActivity();
-		act.runOnUiThread(new Runnable() {
+		mLastBitmap = bmp;
+
+		mActivity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				updateUi();
@@ -246,7 +275,7 @@ public class FragmentData extends Fragment {
 
 		// takePicture has finished, now safe to resume the preview
 		// NOTE: preview must be started before takePicture
-		act.mCamera.startPreview();
+		mActivity.mCamera.startPreview();
 
 		// schedule next timer
 		timerHandler.postDelayed(timerRunnable, timerInterval);
@@ -254,7 +283,7 @@ public class FragmentData extends Fragment {
 
 	boolean accessExternalStorage()
 	{
-		int permissionCheck = ContextCompat.checkSelfPermission(getActivity(),
+		int permissionCheck = ContextCompat.checkSelfPermission(mActivity,
 				Manifest.permission.WRITE_EXTERNAL_STORAGE);
 		if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
 			Log.d(TAG, "Permission already granted!");
@@ -348,11 +377,11 @@ public class FragmentData extends Fragment {
 					getI(R.string.saved_lower_radius) + "\n");
 			fileWriter.flush();
 			fileWriter.close();
-			Toast.makeText(getActivity(), getString(R.string.msg_csv_written),
+			Toast.makeText(mActivity, getString(R.string.msg_csv_written),
 					Toast.LENGTH_SHORT).show();
 		} catch (java.io.IOException e) {
 			Log.d(TAG, e.toString());
-			Toast.makeText(getActivity(), e.toString(), Toast.LENGTH_LONG).show();
+			Toast.makeText(mActivity, e.toString(), Toast.LENGTH_LONG).show();
 			//Handle exception
 		}
 	}
@@ -361,7 +390,7 @@ public class FragmentData extends Fragment {
 	{
 		// no data captured yet
 		if(mTimestamp.getText().toString().isEmpty()) {
-			Toast.makeText(getActivity(), getString(R.string.msg_no_data_yet), Toast.LENGTH_SHORT).show();
+			Toast.makeText(mActivity, getString(R.string.msg_no_data_yet), Toast.LENGTH_SHORT).show();
 			return;
 		}
 
@@ -371,7 +400,7 @@ public class FragmentData extends Fragment {
 		if(!mSecciDepth.getText().toString().isEmpty()) {
 			doWriteToCsv();
 		} else {
-			new AlertDialog.Builder(getActivity())
+			new AlertDialog.Builder(mActivity)
 				.setTitle("Title")
 				.setMessage(getString(R.string.msg_write_despite_blank_secci))
 				.setIcon(android.R.drawable.ic_dialog_alert)
@@ -390,22 +419,21 @@ public class FragmentData extends Fragment {
 		@Override
 		public void run() {
 			Log.d(TAG, "Timer Callback");
-			MainActivity act = (MainActivity)getActivity();
-			if(act.mViewPager.getCurrentItem() != 2)
+			if(mActivity.mViewPager.getCurrentItem() != 2)
 				return;
-			if(act.mCamera != null) {
-				SurfaceView preview = ((FragmentCalibrate)act.mSectionsPagerAdapter.getItem(1)).mPreview;
+			if(mActivity.mCamera != null) {
+				SurfaceView preview = ((FragmentCalibrate)mActivity.mSectionsPagerAdapter.getItem(1)).mPreview;
 
 				// callbacks: shutter, raw, post view, jpeg
 				Log.d(TAG, "Taking a picture!");
 				try {
-					act.mCamera.takePicture(null, null, null, mJpegCallback);
+					mActivity.mCamera.takePicture(null, null, null, mJpegCallback);
 				} catch(Exception e) {
 					// "E/Camera: Error 100" and "Camera service died!"
 					// NOTE: fixed by not re-enabling preview until calibrate
 					// screen shown.
 					Log.d(TAG, e.toString());
-					Toast.makeText(getActivity(), e.toString(), Toast.LENGTH_LONG).show();
+					Toast.makeText(mActivity, e.toString(), Toast.LENGTH_LONG).show();
 				}
 			} else {
 				timerHandler.postDelayed(this, timerInterval);
@@ -414,10 +442,18 @@ public class FragmentData extends Fragment {
 	};
 
 	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+		mActivity = (MainActivity)activity;
+	}
+
+	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		mRawCallback = new RawCallback();
 		mJpegCallback = new JpegCallback();
-		sharedPrefs = getActivity().getPreferences(Context.MODE_PRIVATE);
+		if(mActivity == null)
+			mActivity = (MainActivity)getActivity();
+		sharedPrefs = mActivity.getPreferences(Context.MODE_PRIVATE);
 		View v = inflater.inflate(R.layout.fragment_data, container, false);
 
 		mTimestamp = (TextView)v.findViewById(R.id.timestamp);
@@ -434,6 +470,7 @@ public class FragmentData extends Fragment {
 		mAvgGLower = (TextView)v.findViewById(R.id.avg_g_lower);
 		mAvgBUpper = (TextView)v.findViewById(R.id.avg_b_upper);
 		mAvgBLower = (TextView)v.findViewById(R.id.avg_b_lower);
+		mImagePreview = (ImageView)v.findViewById(R.id.data_preview);
 
 		mButtonSave = (Button)v.findViewById(R.id.btn_write_csv);
 		mButtonSave.setOnClickListener(new View.OnClickListener() {
@@ -448,7 +485,7 @@ public class FragmentData extends Fragment {
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				if (actionId == EditorInfo.IME_ACTION_DONE) {
 					updatePrefs();
-					InputMethodManager imm= (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+					InputMethodManager imm= (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
 					imm.hideSoftInputFromWindow(mSecciDepth.getWindowToken(), 0);
 					return true;
 				}
@@ -464,13 +501,12 @@ public class FragmentData extends Fragment {
 		});
 
 		// setup timer
-		((MainActivity)getActivity()).mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+		mActivity.mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 			@Override
 			public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) { } 
 
 			@Override
 			public void onPageSelected(int position) {
-				MainActivity act = (MainActivity)getActivity();
 				if(position == 2) {
 					timerHandler.removeCallbacks(timerRunnable);
 					timerHandler.postDelayed(timerRunnable, 1000);

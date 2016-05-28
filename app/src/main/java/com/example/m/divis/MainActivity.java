@@ -71,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
 	// adjusted by device orientation
 	public int mCaptureWidth;
 	public int mCaptureHeight;
+	public int mCameraRotationDegrees;
+	public int mCameraRotation;
 
 	public static int index_of_back_camera = 0;
 
@@ -223,17 +225,30 @@ public class MainActivity extends AppCompatActivity {
 
 			// adjust by orientation
 			Display display = ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+			mCameraRotationDegrees = 0;
 			switch (display.getRotation()) {
 			case Surface.ROTATION_0:
-			case Surface.ROTATION_180:
 				mCaptureWidth = mCaptureSize.height;
 				mCaptureHeight = mCaptureSize.width;
 				break;
-			default:
+			case Surface.ROTATION_180:
+				mCameraRotationDegrees = 180;
+				mCaptureWidth = mCaptureSize.height;
+				mCaptureHeight = mCaptureSize.width;
+				break;
+			case Surface.ROTATION_90:
+				mCameraRotationDegrees = 90;
+				mCaptureWidth = mCaptureSize.width;
+				mCaptureHeight = mCaptureSize.height;
+				break;
+			case Surface.ROTATION_270:
+				mCameraRotationDegrees = 270;
 				mCaptureWidth = mCaptureSize.width;
 				mCaptureHeight = mCaptureSize.height;
 				break;
 			}
+			mCameraRotation = (info.orientation - mCameraRotationDegrees + 360) % 360;
+			params.setRotation(mCameraRotation); 
 
 			params.setPictureSize(mCaptureSize.width, mCaptureSize.height);
 
