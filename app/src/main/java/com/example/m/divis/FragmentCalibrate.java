@@ -118,9 +118,6 @@ public class FragmentCalibrate extends Fragment {
 		// List of supported preview sizes
 		private List<Camera.Size> mSupportedPreviewSizes;
 
-		// Flash modes supported by this camera
-		private List<String> mSupportedFlashModes;
-
 		// View holding this camera.
 		private View mCameraView;
 
@@ -164,15 +161,6 @@ public class FragmentCalibrate extends Fragment {
 			// Source: http://stackoverflow.com/questions/7942378/android-camera-will-not-work-startpreview-fails
 			mCamera = camera;
 			mSupportedPreviewSizes = mCamera.getParameters().getSupportedPreviewSizes();
-			mSupportedFlashModes = mCamera.getParameters().getSupportedFlashModes();
-
-			// Set the camera to Auto Flash mode.
-			if (mSupportedFlashModes != null && mSupportedFlashModes.contains(Camera.Parameters.FLASH_MODE_AUTO)){
-				Camera.Parameters parameters = mCamera.getParameters();
-				parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
-				mCamera.setParameters(parameters);
-			}
-
 			requestLayout();
 		}
 
@@ -217,9 +205,6 @@ public class FragmentCalibrate extends Fragment {
 			// stop preview before making changes
 			try {
 				Camera.Parameters parameters = mCamera.getParameters();
-
-				// Set the auto-focus mode to "continuous"
-				parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
 
 				// Preview size must exist.
 				if(mPreviewSize != null) {
