@@ -179,8 +179,8 @@ public class FragmentData extends Fragment {
 		// Bugfix: not rotated to match preview
 		Bitmap bmpPreRotate = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.length);
 		int angleToRotate = mActivity.mCameraRotation;
-		angleToRotate = angleToRotate + 180;
 		Bitmap bmp = rotate(bmpPreRotate, angleToRotate);
+		Log.d(TAG, "Rotating image by " + angleToRotate);
 
 		int w = bmp.getWidth();
 		int h = bmp.getHeight();

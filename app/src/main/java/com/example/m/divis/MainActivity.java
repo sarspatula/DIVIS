@@ -247,8 +247,10 @@ public class MainActivity extends AppCompatActivity {
 				mCaptureHeight = mCaptureSize.height;
 				break;
 			}
+			//mCameraRotation = info.orientation;
 			mCameraRotation = (info.orientation - mCameraRotationDegrees + 360) % 360;
-			params.setRotation(mCameraRotation); 
+//			params.setRotation(mCameraRotation); 
+			Log.d(TAG, "Camera Rotation: orientation=" + info.orientation + ", Rot degrees=" + mCameraRotationDegrees);
 
 			params.setPictureSize(mCaptureSize.width, mCaptureSize.height);
 
