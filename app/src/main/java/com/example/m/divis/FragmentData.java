@@ -176,6 +176,10 @@ public class FragmentData extends Fragment {
 	// run in separate thread
 	void analyzeImage(byte[] jpeg)
 	{
+		// BUGFIX: out of memory
+		mImagePreview.setImageResource(android.R.color.transparent);
+		mLastBitmap = null;
+
 		// Bugfix: not rotated to match preview
 		Bitmap bmpPreRotate = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.length);
 		int angleToRotate = mActivity.mCameraRotation;
@@ -275,7 +279,9 @@ public class FragmentData extends Fragment {
 
 		// takePicture has finished, now safe to resume the preview
 		// NOTE: preview must be started before takePicture
-		mActivity.mCamera.startPreview();
+		// NOTE: must be called after this function returns
+//		mActivity.mCamera.startPreview();
+		previewHandler.postDelayed(previewRunnable, 1);
 
 		// schedule next timer
 		timerHandler.postDelayed(timerRunnable, timerInterval);
@@ -441,6 +447,15 @@ public class FragmentData extends Fragment {
 		}
 	};
 
+	// restart preview
+	Handler previewHandler = new Handler();
+	Runnable previewRunnable = new Runnable() {
+		@Override
+		public void run() {
+			mActivity.mCamera.startPreview();
+		}
+	};
+
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
@@ -537,12 +552,16 @@ public class FragmentData extends Fragment {
 	@Override
 	public void onPause() {
 		super.onPause();
-		timerHandler.removeCallbacks(timerRunnable);
+		if(isAdded()) {
+			timerHandler.removeCallbacks(timerRunnable);
+		}
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
+		if(isAdded()) {
+		}
 	}
 
 	boolean pixelIsLive(int c)
