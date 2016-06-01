@@ -177,7 +177,8 @@ public class FragmentData extends Fragment {
 	void analyzeImage(byte[] jpeg)
 	{
 		// BUGFIX: out of memory
-		mImagePreview.setImageResource(android.R.color.transparent);
+		// BUG: wrong thread
+//		mImagePreview.setImageResource(android.R.color.transparent);
 		mLastBitmap = null;
 
 		// Bugfix: not rotated to match preview
