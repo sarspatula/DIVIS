@@ -415,19 +415,6 @@ public class FragmentData extends Fragment {
 		if(!accessExternalStorage())
 			return;
 
-		if(!mSecciDepth.getText().toString().isEmpty()) {
-			doWriteToCsv();
-		} else {
-			new AlertDialog.Builder(mActivity)
-				.setTitle("Title")
-				.setMessage(getString(R.string.msg_write_despite_blank_secci))
-				.setIcon(android.R.drawable.ic_dialog_alert)
-				.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int whichButton) {
-						doWriteToCsv();
-					}})
-				.setNegativeButton(android.R.string.no, null).show();
-		}
 	}
 
 	// capture timer
@@ -530,8 +517,26 @@ public class FragmentData extends Fragment {
 		mButtonSave.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				if(mButtonSave.isChecked()) {
+					if(!mSecciDepth.getText().toString().isEmpty()) {
+						mLoggingToCSV = true;
+					} else {
+						mButtonSave.setChecked(false);
+						new AlertDialog.Builder(mActivity)
+							.setTitle("Title")
+							.setMessage(getString(R.string.msg_write_despite_blank_secci))
+							.setIcon(android.R.drawable.ic_dialog_alert)
+							.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int whichButton) {
+									mButtonSave.setChecked(true);
+									mLoggingToCSV = true;
+								}})
+							.setNegativeButton(android.R.string.no, null).show();
+					}
+				} else {
+					mLoggingToCSV = false;
+				}
 				//writeToCsv();
-				mLoggingToCSV = !mLoggingToCSV;
 			}
 		});
 
