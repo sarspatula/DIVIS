@@ -44,6 +44,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -69,11 +70,16 @@ public class FragmentData extends Fragment {
 	private TextView mAvgGLower;
 	private TextView mAvgBUpper;
 	private TextView mAvgBLower;
-	private Button mButtonSave;
+
+	private ToggleButton mButtonSave;
+	private TextView mCounter;
 
 	// preview capture
 	private ImageView mImagePreview;
 	private Bitmap mLastBitmap = null;
+
+	private boolean mLoggingToCSV;
+	private int mCount;
 
 	// data
 	int upperLive = 0;
@@ -132,6 +138,14 @@ public class FragmentData extends Fragment {
 				AnalyzerTask(byte[] jpeg) { this.jpeg = jpeg; }
 				public void run() {
 					analyzeImage(jpeg);
+					if(mLoggingToCSV) {
+						mActivity.runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								writeToCsv();
+							}
+						});
+					}
 				}
 			}
 			Thread t = new Thread(new AnalyzerTask(jpeg));
@@ -432,6 +446,15 @@ public class FragmentData extends Fragment {
 				mImagePreview.setImageResource(android.R.color.transparent);
 				mLastBitmap = null;
 
+				// update counter
+				if(mLoggingToCSV) {
+					mCounter.setText(getString(R.string.data_counter_prefix) +
+							Integer.toString(++mCount));
+				} else {
+					mCount = 0;
+					mCounter.setText(getString(R.string.data_counter_zeroed));
+				}
+
 				// callbacks: shutter, raw, post view, jpeg
 				Log.d(TAG, "Taking a picture!");
 				try {
@@ -456,7 +479,7 @@ public class FragmentData extends Fragment {
 		public void run() {
 			// in case surfaceChanged and preview already started?
 			try {
-				mCamera.stopPreview();
+				mActivity.mCamera.stopPreview();
 			} catch (Exception e){
 				// ignore: tried to stop a non-existent preview
 			}
@@ -501,12 +524,14 @@ public class FragmentData extends Fragment {
 		mAvgBUpper = (TextView)v.findViewById(R.id.avg_b_upper);
 		mAvgBLower = (TextView)v.findViewById(R.id.avg_b_lower);
 		mImagePreview = (ImageView)v.findViewById(R.id.data_preview);
+		mCounter = (TextView)v.findViewById(R.id.counter);
 
-		mButtonSave = (Button)v.findViewById(R.id.btn_write_csv);
+		mButtonSave = (ToggleButton)v.findViewById(R.id.btn_write_csv);
 		mButtonSave.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				writeToCsv();
+				//writeToCsv();
+				mLoggingToCSV = !mLoggingToCSV;
 			}
 		});
 

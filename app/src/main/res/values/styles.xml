@@ -61,4 +61,7 @@
 	<style name="MyButton" parent="MyTextView">
 	</style>
 
+	<style name="MyToggleButton" parent="MyButton">
+	</style>
+
 </resources>

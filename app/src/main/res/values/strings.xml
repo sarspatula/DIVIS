@@ -71,7 +71,11 @@
     <string name="calibrate_min_rgb">Live RGB Minimum</string>
 
 	<!-- Data screen -->
-	<string name="btn_write_csv">Write to CSV</string>
+	<string name="btn_write_csv">Log to CSV</string>
+	<string name="btn_logging_on">Logging to CSV</string>
+	<string name="btn_logging_off">Log to CSV</string>
+	<string name="data_counter_prefix">Sample Count: </string>
+	<string name="data_counter_zeroed">Sample Count: 0</string>
 	<string name="data_column_upper">Upper</string>
 	<string name="data_column_lower">Lower</string>
 	<string name="data_timestamp">date_time</string>

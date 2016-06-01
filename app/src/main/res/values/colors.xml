@@ -13,4 +13,7 @@
 
     <color name="button_default">#7aaee9</color>
     <color name="button_pressed">#599cc7</color>
+
+    <color name="button_on">#0f0</color>
+    <color name="button_off">#599cc7</color>
 </resources>
