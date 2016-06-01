@@ -194,6 +194,7 @@ public class FragmentCalibrate extends Fragment {
 		 * @param h
 		 */
 		public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
+			Log.d(TAG, "surfaceChanged");
 			// If your preview can change or rotate, take care of those events here.
 			// Make sure to stop the preview before resizing or reformatting it.
 
@@ -203,6 +204,12 @@ public class FragmentCalibrate extends Fragment {
 			}
 
 			// stop preview before making changes
+			try {
+				mCamera.stopPreview();
+			} catch (Exception e){
+				// ignore: tried to stop a non-existent preview
+			}
+
 			try {
 				Camera.Parameters parameters = mCamera.getParameters();
 

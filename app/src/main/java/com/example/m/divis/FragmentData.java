@@ -176,11 +176,6 @@ public class FragmentData extends Fragment {
 	// run in separate thread
 	void analyzeImage(byte[] jpeg)
 	{
-		// BUGFIX: out of memory
-		// BUG: wrong thread
-//		mImagePreview.setImageResource(android.R.color.transparent);
-		mLastBitmap = null;
-
 		// Bugfix: not rotated to match preview
 		Bitmap bmpPreRotate = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.length);
 		int angleToRotate = mActivity.mCameraRotation;
@@ -255,11 +250,13 @@ public class FragmentData extends Fragment {
 			}
 		}
 
-		if(lowerData > 0 && upperData > 0) {
+		if(upperData > 0) {
 			upperRAvg = upperRTotal / upperData;
 			upperGAvg = upperGTotal / upperData;
 			upperBAvg = upperBTotal / upperData;
+		}
 
+		if(lowerData > 0) {
 			lowerRAvg = lowerRTotal / lowerData;
 			lowerGAvg = lowerGTotal / lowerData;
 			lowerBAvg = lowerBTotal / lowerData;
@@ -431,6 +428,10 @@ public class FragmentData extends Fragment {
 			if(mActivity.mCamera != null) {
 				SurfaceView preview = ((FragmentCalibrate)mActivity.mSectionsPagerAdapter.getItem(1)).mPreview;
 
+				// free up memory
+				mImagePreview.setImageResource(android.R.color.transparent);
+				mLastBitmap = null;
+
 				// callbacks: shutter, raw, post view, jpeg
 				Log.d(TAG, "Taking a picture!");
 				try {
@@ -453,7 +454,20 @@ public class FragmentData extends Fragment {
 	Runnable previewRunnable = new Runnable() {
 		@Override
 		public void run() {
-			mActivity.mCamera.startPreview();
+			// in case surfaceChanged and preview already started?
+			try {
+				mCamera.stopPreview();
+			} catch (Exception e){
+				// ignore: tried to stop a non-existent preview
+			}
+
+			try {
+				mActivity.mCamera.startPreview();
+			} catch(Exception e) {
+				Log.d(TAG, "ERROR: " + e.toString());
+				Toast.makeText(mActivity, "startPreview: " + e.toString(),
+						Toast.LENGTH_LONG).show();
+			}
 		}
 	};
 
