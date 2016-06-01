@@ -355,6 +355,7 @@ public class FragmentData extends Fragment {
 			}
 		}
 		File file = new File(dir, "DIVIS.csv");
+		boolean write_header = !file.exists();
 
 		// delimeter
 		String c = ",";
@@ -362,6 +363,10 @@ public class FragmentData extends Fragment {
 		//Write to file
 		try {
 			FileWriter fileWriter = new FileWriter(file, true);
+			if(write_header) {
+				fileWriter.append("# device_ID, divis_ID, app_version, location_ID, location_Name, location_Detail, upper_Sensor_Depth, lower_Sensor_Depth, date_time, secci_depth, live_pixels_upper, washed_pixels_upper, data_pixels_upper, avg_r_upper, avg_g_upper, avg_b_upper, live_pixels_lower, washed_pixels_lower, data_pixels_lower, avg_r_lower, avg_g_lower, avg_b_lower, camera_exposure, min_rgb_for_live_pixel, upper_x, upper_y, upper_size, lower_x, lower_y, lower_size\n");
+
+			}
 			fileWriter.append(
 					getS(R.string.saved_device_id) + c +
 					getS(R.string.saved_divis_id) + c +
@@ -395,8 +400,8 @@ public class FragmentData extends Fragment {
 					getI(R.string.saved_lower_radius) + "\n");
 			fileWriter.flush();
 			fileWriter.close();
-			Toast.makeText(mActivity, getString(R.string.msg_csv_written),
-					Toast.LENGTH_SHORT).show();
+//			Toast.makeText(mActivity, getString(R.string.msg_csv_written),
+//					Toast.LENGTH_SHORT).show();
 		} catch (java.io.IOException e) {
 			Log.d(TAG, e.toString());
 			Toast.makeText(mActivity, e.toString(), Toast.LENGTH_LONG).show();
@@ -415,6 +420,7 @@ public class FragmentData extends Fragment {
 		if(!accessExternalStorage())
 			return;
 
+		doWriteToCsv();
 	}
 
 	// capture timer
