@@ -342,6 +342,8 @@ public class FragmentCalibrate extends Fragment {
 
 		Shape touchedShape(PointF pt)
 		{
+			if(mUpperShape == null || mLowerShape == null)
+				return null;
 			PointF ptfBmp = transformCoordTouchToBitmap(pt.x, pt.y);
 			Point ptBmp = new Point((int)Math.floor(ptfBmp.x), (int)Math.floor(ptfBmp.y));
 			Log.d(TAG, "touchedShape: " + pt.toString());
