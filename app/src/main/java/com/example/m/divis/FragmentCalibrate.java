@@ -72,8 +72,8 @@ public class FragmentCalibrate extends Fragment {
 	SharedPreferences sharedPrefs;
 
 	// class encapsulates drawable, draw style, center, and radius
-	private Shape mUpperShape;
-	private Shape mLowerShape;
+	private Shape mUpperShape = null;
+	private Shape mLowerShape = null;
 
 	// View to display the camera output.
 	public CameraPreview mPreview;
@@ -432,6 +432,8 @@ public class FragmentCalibrate extends Fragment {
 
 	boolean pixelWithinArea(Shape s, Point px)
 	{
+		if(s == null)
+			return false;
 		return pixelWithinArea(s.center, s.radius, px);
 	}
 
