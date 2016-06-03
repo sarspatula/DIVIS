@@ -137,11 +137,15 @@ public class FragmentData extends Fragment {
 				byte[] jpeg;
 				AnalyzerTask(byte[] jpeg) { this.jpeg = jpeg; }
 				public void run() {
+					if(!isAdded())
+						return;
 					analyzeImage(jpeg);
 					if(mLoggingToCSV) {
 						mActivity.runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
+								if(!isAdded())
+									return;
 								writeToCsv();
 							}
 						});
@@ -285,6 +289,8 @@ public class FragmentData extends Fragment {
 		mActivity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
+				if(!isAdded())
+					return;
 				updateUi();
 			}
 		});
@@ -429,6 +435,8 @@ public class FragmentData extends Fragment {
 	Runnable timerRunnable = new Runnable() {
 		@Override
 		public void run() {
+			if(!isAdded())
+				return;
 			Log.d(TAG, "Timer Callback");
 			if(mActivity.mViewPager.getCurrentItem() != 2)
 				return;
@@ -470,6 +478,8 @@ public class FragmentData extends Fragment {
 	Runnable previewRunnable = new Runnable() {
 		@Override
 		public void run() {
+			if(!isAdded())
+				return;
 			// in case surfaceChanged and preview already started?
 			try {
 				mActivity.mCamera.stopPreview();
