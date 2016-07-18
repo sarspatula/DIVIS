@@ -44,6 +44,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+// test commit
+
 public class ButtonWithFont extends Button {
 
 	public ButtonWithFont(Context context, AttributeSet attrs) {
