@@ -1,2 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<items version="2" />
+<items version="2" >
+
+    <item
+        jar="/Volumes/DATA/Projects/android/Divis App/DIVIS/app/build/intermediates/exploded-aar/com.android.support/recyclerview-v7/23.1.1/jars/classes.jar"
+        jumboMode="false"
+        revision="23.0.3"
+        sha1="09c5e804bc67fc0580360043dff067df574a60d4">
+        <dex dex="/Volumes/DATA/Projects/android/Divis App/DIVIS/app/build/intermediates/pre-dexed/debug/com.android.support-recyclerview-v7-23.1.1_ddada9dd1854beb0b3e731232414732b8415f62f.jar" />
+    </item>
+    <item
+        jar="/Volumes/DATA/Projects/android/Divis App/DIVIS/app/build/intermediates/exploded-aar/com.android.support/support-v4/23.2.0/jars/libs/internal_impl-23.2.0.jar"
+        jumboMode="false"
+        revision="23.0.3"
+        sha1="6e239441500605809818997dd63b62a947195f8c">
+        <dex dex="/Volumes/DATA/Projects/android/Divis App/DIVIS/app/build/intermediates/pre-dexed/debug/internal_impl-23.2.0_218301ed899007664180fcc40a21c20d47c92688.jar" />
+    </item>
+    <item
+        jar="/Volumes/DATA/Projects/android/Divis App/DIVIS/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.1.1/jars/classes.jar"
+        jumboMode="false"
+        revision="23.0.3"
+        sha1="5c5699834e9722f1c288fea2de82725d078ba127">
+        <dex dex="/Volumes/DATA/Projects/android/Divis App/DIVIS/app/build/intermediates/pre-dexed/debug/com.android.support-appcompat-v7-23.1.1_04110eeee02c920da4658e895127cd1c37a161b0.jar" />
+    </item>
+    <item
+        jar="/Volumes/DATA/Projects/android/Divis App/DIVIS/app/build/intermediates/exploded-aar/com.android.support/design/23.1.1/jars/classes.jar"
+        jumboMode="false"
+        revision="23.0.3"
+        sha1="379471b2bd17d9737c050345c08e8c7d16589784">
+        <dex dex="/Volumes/DATA/Projects/android/Divis App/DIVIS/app/build/intermediates/pre-dexed/debug/com.android.support-design-23.1.1_aa75587803434ac7d88ff49130df04707cc7fecd.jar" />
+    </item>
+    <item
+        jar="/Volumes/DATA/Projects/android/Divis App/DIVIS/app/build/intermediates/exploded-aar/com.android.support/support-v4/23.2.0/jars/classes.jar"
+        jumboMode="false"
+        revision="23.0.3"
+        sha1="e5f32fa48a3eb2de0c987025c11b6e3864b634d9">
+        <dex dex="/Volumes/DATA/Projects/android/Divis App/DIVIS/app/build/intermediates/pre-dexed/debug/com.android.support-support-v4-23.2.0_fc8214d33c900592b00f681db95d96d8d5278c38.jar" />
+    </item>
+    <item
+        jar="/Volumes/DATA/Projects/android/Divis App/DIVIS/app/build/intermediates/exploded-aar/com.android.support/gridlayout-v7/23.1.1/jars/classes.jar"
+        jumboMode="false"
+        revision="23.0.3"
+        sha1="8465fad6dd05b954b82bd5ff22edd80992808561">
+        <dex dex="/Volumes/DATA/Projects/android/Divis App/DIVIS/app/build/intermediates/pre-dexed/debug/com.android.support-gridlayout-v7-23.1.1_86c762e4b3af1317aaa5f23f20b9bdcb738e9bcb.jar" />
+    </item>
+    <item
+        jar="/Users/c49/Library/Android/sdk/extras/android/m2repository/com/android/support/support-annotations/23.2.0/support-annotations-23.2.0.jar"
+        jumboMode="false"
+        revision="23.0.3"
+        sha1="c5bf571bb10462bd90e5419ade67793f71acbc87">
+        <dex dex="/Volumes/DATA/Projects/android/Divis App/DIVIS/app/build/intermediates/pre-dexed/debug/support-annotations-23.2.0_de0cb3f1985ec8ad4c8849f2c827b66e14ac562e.jar" />
+    </item>
+    <item
+        jar="/Volumes/DATA/Projects/android/Divis App/DIVIS/app/build/intermediates/exploded-aar/ch.acra/acra/4.8.5/jars/classes.jar"
+        jumboMode="false"
+        revision="23.0.3"
+        sha1="553933c766d5b677a7640ce2616577bfade1071e">
+        <dex dex="/Volumes/DATA/Projects/android/Divis App/DIVIS/app/build/intermediates/pre-dexed/debug/ch.acra-acra-4.8.5_97b1ea04af8339707bd5d88ef283502c3d9bdd29.jar" />
+    </item>
+
+</items>

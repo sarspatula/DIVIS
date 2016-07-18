@@ -141,9 +141,11 @@ public class FragmentCalibrate extends Fragment {
 		/**
 		 * Begin the preview of the camera input.
 		 */
+
 		public void startCameraPreview()
 		{
 			try{
+				mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 				mCamera.setPreviewDisplay(mHolder);
 				mCamera.startPreview();
 			}
@@ -204,11 +206,11 @@ public class FragmentCalibrate extends Fragment {
 			}
 
 			// stop preview before making changes
-			try {
+			/*try {
 				mCamera.stopPreview();
 			} catch (Exception e){
 				// ignore: tried to stop a non-existent preview
-			}
+			}*/
 
 			try {
 				Camera.Parameters parameters = mCamera.getParameters();
@@ -449,7 +451,23 @@ public class FragmentCalibrate extends Fragment {
 
 		return new PointF(coordX , coordY);
 	}
+	@Override
+	public void setUserVisibleHint(boolean isVisibleToUser) {
+		super.setUserVisibleHint(isVisibleToUser);
 
+		if (isVisibleToUser&&mCamera!=null) {
+			try {
+				mCamera.reconnect();
+				mCamera.startPreview();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+				Log.e("MyFragment", "Fragment is visible.");
+		}
+		else
+			Log.e("MyFragment", "Fragment is not visible.");
+	}
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		sharedPrefs = getActivity().getPreferences(Context.MODE_PRIVATE);
@@ -547,15 +565,11 @@ public class FragmentCalibrate extends Fragment {
 		mPreview.startCameraPreview();
 	}
 
-	public void onCameraReady(MainActivity act)
+	public void onCameraReady()
 	{
-		mCaptureWidth = act.mCaptureWidth;
-		mCaptureHeight = act.mCaptureHeight;
-		setupCameraPreview(act);
-		setupCameraExposureSpinner();
-		setupCameraResolutionSpinner();
-		setupControlShapes();
-		setupControlOverlay();
+
+		setupCameraPreview(getActivity().getBaseContext());
+
 	}
 
 	void setupCameraExposureSpinner()

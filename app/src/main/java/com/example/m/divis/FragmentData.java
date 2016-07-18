@@ -75,7 +75,7 @@ public class FragmentData extends Fragment {
 	private TextView mCounter;
 
 	// preview capture
-	private ImageView mImagePreview;
+	//private ImageView mImagePreview;
 	private Bitmap mLastBitmap = null;
 
 	private boolean mLoggingToCSV;
@@ -139,7 +139,11 @@ public class FragmentData extends Fragment {
 				public void run() {
 					if(!isAdded())
 						return;
-					analyzeImage(jpeg);
+					try {
+						analyzeImage(jpeg);
+					}catch(Exception ex){
+						ex.printStackTrace();
+					}
 					if(mLoggingToCSV) {
 						mActivity.runOnUiThread(new Runnable() {
 							@Override
@@ -160,9 +164,9 @@ public class FragmentData extends Fragment {
 	void updateUi()
 	{
 		if(isAdded()) {
-			if(mLastBitmap != null) {
+			/*if(mLastBitmap != null) {
 				mImagePreview.setImageBitmap(mLastBitmap);
-			}
+			}*/
 			mTimestamp.setText(sTime);
 	//			mSecciDepth.setText();
 			mLivePixelsUpper.setText(Integer.toString(upperLive));
@@ -197,13 +201,15 @@ public class FragmentData extends Fragment {
 		// Bugfix: not rotated to match preview
 		Bitmap bmpPreRotate = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.length);
 		int angleToRotate = mActivity.mCameraRotation;
+		//Bitmap bmp = rotate(bmpPreRotate, angleToRotate);
 		Bitmap bmp = rotate(bmpPreRotate, angleToRotate);
-		Log.d(TAG, "Rotating image by " + angleToRotate);
+		Time now = new Time();
+		now.setToNow();
+		Log.e(TAG, now.format("%Y_%m_%d_%H_%M_%S"));
+		Log.d("Image Length", "Image Length=====>" + jpeg.length);
 
-		int w = bmp.getWidth();
-		int h = bmp.getHeight();
-		Log.d(TAG, "analyzeImage: " + w + "x" + h);
-
+	/*	int w = bmp.getWidth();
+		int h = bmp.getHeight();*/
 		Point upperCenter = new Point(
 				sharedPrefs.getInt(getString(R.string.saved_upper_x), 100),
 				sharedPrefs.getInt(getString(R.string.saved_upper_y), 100));
@@ -236,9 +242,67 @@ public class FragmentData extends Fragment {
 
 		int upper_radius_squared = upperRadius*upperRadius;
 		int lower_radius_squared = lowerRadius*lowerRadius;
-		for(int i=0; i<h; i++) {
+		int minX=upperCenter.x-upperRadius;
+		int maxX=upperCenter.x+upperRadius;
+		int minY=upperCenter.y-upperRadius;
+		int maxY=upperCenter.y+upperRadius;
+
+		for(int i=minX; i<maxX; i++) {
+			for(int j=minY; j<maxY; j++) {
+
+				int c = bmp.getPixel(i, j);
+				if(pixelIsLive(c)) {
+					upperLive++;
+					if(!pixelIsWashed(c)){
+						upperData++;
+						upperRTotal += Color.red(c);
+						upperGTotal += Color.green(c);
+						upperBTotal += Color.blue(c);
+					}
+				else{
+						upperWashed++;
+					}
+
+				}
+				/*if(pixelIsWashed(c))
+					upperWashed++;
+				if(pixelIsData(c)) {
+					upperData++;
+					upperRTotal += Color.red(c);
+					upperGTotal += Color.green(c);
+					upperBTotal += Color.blue(c);
+				}*/
+			}
+		}
+
+		int minX1=lowerCenter.x-lowerRadius;
+		int maxX1=lowerCenter.x+lowerRadius;
+		int minY1=lowerCenter.y-lowerRadius;
+		int maxY1=lowerCenter.y+lowerRadius;
+		Log.e("(maxX-minX)*(maxY-minY)", "W*H===>"+(maxX1-minX1)*(maxY1-minY1));
+		for(int i=minX1; i<maxX1; i++) {
+			for(int j=minY1; j<maxY1; j++) {
+				int c = bmp.getPixel(i, j);
+				if(pixelIsLive(c)){
+					lowerLive++;
+
+					if(!pixelIsWashed(c))
+					{
+						lowerData++;
+						lowerRTotal += Color.red(c);
+						lowerGTotal += Color.green(c);
+						lowerBTotal += Color.blue(c);
+					}else
+						lowerWashed++;
+				}
+
+			}
+		}
+		/*for(int i=0; i<h; i++) {
 			for(int j=0; j<w; j++) {
+
 				if(pixelWithinArea(upperCenter, upperRadius, upper_radius_squared, new Point(j, i))) {
+					Log.d(TAG, "pixelWithinArea: " + j + "x" + i);
 					int c = bmp.getPixel(j, i);
 					if(pixelIsLive(c))
 						upperLive++;
@@ -267,7 +331,7 @@ public class FragmentData extends Fragment {
 				}
 			}
 		}
-
+*/
 		if(upperData > 0) {
 			upperRAvg = upperRTotal / upperData;
 			upperGAvg = upperGTotal / upperData;
@@ -280,8 +344,9 @@ public class FragmentData extends Fragment {
 			lowerBAvg = lowerBTotal / lowerData;
 		}
 
-		Time now = new Time();
+
 		now.setToNow();
+		Log.e("updateUi====>","updateUi===>"+ now.format("%Y_%m_%d_%H_%M_%S"));
 		sTime = now.format("%Y_%m_%d_%H_%M_%S");
 
 		mLastBitmap = bmp;
@@ -289,8 +354,8 @@ public class FragmentData extends Fragment {
 		mActivity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				if(!isAdded())
-					return;
+				/*if(!isAdded())
+					return;*/
 				updateUi();
 			}
 		});
@@ -302,7 +367,7 @@ public class FragmentData extends Fragment {
 		previewHandler.postDelayed(previewRunnable, 1);
 
 		// schedule next timer
-		timerHandler.postDelayed(timerRunnable, timerInterval);
+		timerHandler.postDelayed(timerRunnable, 500);
 	}
 
 	boolean accessExternalStorage()
@@ -437,14 +502,14 @@ public class FragmentData extends Fragment {
 		public void run() {
 			if(!isAdded())
 				return;
-			Log.d(TAG, "Timer Callback");
+
 			if(mActivity.mViewPager.getCurrentItem() != 2)
 				return;
 			if(mActivity.mCamera != null) {
 				SurfaceView preview = ((FragmentCalibrate)mActivity.mSectionsPagerAdapter.getItem(1)).mPreview;
 
 				// free up memory
-				mImagePreview.setImageResource(android.R.color.transparent);
+				//mImagePreview.setImageResource(android.R.color.transparent);
 				mLastBitmap = null;
 
 				// update counter
@@ -457,9 +522,14 @@ public class FragmentData extends Fragment {
 				}
 
 				// callbacks: shutter, raw, post view, jpeg
-				Log.d(TAG, "Taking a picture!");
+
 				try {
+					Time now = new Time();
+					now.setToNow();
+					Log.e("Before pick taken", now.format("%Y_%m_%d_%H_%M_%S"));
 					mActivity.mCamera.takePicture(null, null, null, mJpegCallback);
+					now.setToNow();
+
 				} catch(Exception e) {
 					// "E/Camera: Error 100" and "Camera service died!"
 					// NOTE: fixed by not re-enabling preview until calibrate
@@ -467,9 +537,11 @@ public class FragmentData extends Fragment {
 					Log.d(TAG, e.toString());
 					Toast.makeText(mActivity, e.toString(), Toast.LENGTH_LONG).show();
 				}
-			} else {
-				timerHandler.postDelayed(this, timerInterval);
 			}
+
+		/*	else {
+				timerHandler.postDelayed(this, timerInterval);
+			}*/
 		}
 	};
 
@@ -526,28 +598,29 @@ public class FragmentData extends Fragment {
 		mAvgGLower = (TextView)v.findViewById(R.id.avg_g_lower);
 		mAvgBUpper = (TextView)v.findViewById(R.id.avg_b_upper);
 		mAvgBLower = (TextView)v.findViewById(R.id.avg_b_lower);
-		mImagePreview = (ImageView)v.findViewById(R.id.data_preview);
+		//mImagePreview = (ImageView)v.findViewById(R.id.data_preview);
 		mCounter = (TextView)v.findViewById(R.id.counter);
 
 		mButtonSave = (ToggleButton)v.findViewById(R.id.btn_write_csv);
 		mButtonSave.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if(mButtonSave.isChecked()) {
-					if(!mSecciDepth.getText().toString().isEmpty()) {
+				if (mButtonSave.isChecked()) {
+					if (!mSecciDepth.getText().toString().isEmpty()) {
 						mLoggingToCSV = true;
 					} else {
 						mButtonSave.setChecked(false);
 						new AlertDialog.Builder(mActivity)
-							.setTitle("Title")
-							.setMessage(getString(R.string.msg_write_despite_blank_secci))
-							.setIcon(android.R.drawable.ic_dialog_alert)
-							.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog, int whichButton) {
-									mButtonSave.setChecked(true);
-									mLoggingToCSV = true;
-								}})
-							.setNegativeButton(android.R.string.no, null).show();
+								.setTitle("Title")
+								.setMessage(getString(R.string.msg_write_despite_blank_secci))
+								.setIcon(android.R.drawable.ic_dialog_alert)
+								.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+									public void onClick(DialogInterface dialog, int whichButton) {
+										mButtonSave.setChecked(true);
+										mLoggingToCSV = true;
+									}
+								})
+								.setNegativeButton(android.R.string.no, null).show();
 					}
 				} else {
 					mLoggingToCSV = false;
@@ -561,7 +634,7 @@ public class FragmentData extends Fragment {
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				if (actionId == EditorInfo.IME_ACTION_DONE) {
 					updatePrefs();
-					InputMethodManager imm= (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+					InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
 					imm.hideSoftInputFromWindow(mSecciDepth.getWindowToken(), 0);
 					return true;
 				}
@@ -571,7 +644,7 @@ public class FragmentData extends Fragment {
 		mSecciDepth.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 			@Override
 			public void onFocusChange(View v, boolean hasFocus) {
-				if(!hasFocus)
+				if (!hasFocus)
 					updatePrefs();
 			}
 		});
@@ -583,12 +656,16 @@ public class FragmentData extends Fragment {
 
 			@Override
 			public void onPageSelected(int position) {
+				timerHandler.removeCallbacks(timerRunnable);
 				if(position == 2) {
-					timerHandler.removeCallbacks(timerRunnable);
+
 					timerHandler.postDelayed(timerRunnable, 1000);
-				} else {
-					timerHandler.removeCallbacks(timerRunnable);
 				}
+				/*else if(position==1){
+					mActivity.setupCamera();
+
+				}
+*/
 			}
 
 			@Override
@@ -627,7 +704,7 @@ public class FragmentData extends Fragment {
 
 	boolean pixelIsLive(int c)
 	{
-		int min = sharedPrefs.getInt(getString(R.string.saved_min_rgb_for_live_pixel),
+		int min = sharedPrefs.getInt("saved_min_rgb_for_live_pixel",
 				Integer.parseInt(getString(R.string.saved_min_rgb_for_live_pixel_default)));
 		return (Color.red(c) > min && Color.green(c) > min && Color.blue(c) > min);
 	}
@@ -642,6 +719,8 @@ public class FragmentData extends Fragment {
 		return pixelIsLive(c) && !pixelIsWashed(c);
 	}
 
+
+
 	boolean pixelWithinArea(Point center, int radius, int radius_squared, Point px)
 	{
 		// fast check
@@ -650,11 +729,11 @@ public class FragmentData extends Fragment {
 			return false;
 
 		// slow check
-		int dx = center.x - px.x;
+		/*int dx = center.x - px.x;
 		int dy = center.y - px.y;
 		int dist_squared = (int)Math.floor(Math.pow(dx, 2) + Math.pow(dy, 2));
 		if(dist_squared > radius_squared)
-			return false;
+			return false;*/
 		return true;
 	}
 }
