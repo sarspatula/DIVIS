@@ -147,12 +147,12 @@
 				android:id="@+id/avg_b_lower"
 				style="@style/GridTextViewBordered" />
 
-			<ImageView
+			<!--<ImageView
 				android:id="@+id/data_preview"
 				android:layout_marginTop="24dp"
 				android:layout_columnSpan="3"
 				android:layout_width="match_parent"
-				android:layout_height="wrap_content" />
+				android:layout_height="wrap_content" />-->
 
 		</GridLayout>
 
