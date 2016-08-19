@@ -2,18 +2,16 @@ package com.example.m.divis;
 
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
-import android.graphics.drawable.shapes.RectShape;
 
 public class Shape {
 	public Point center;
 	public int radius;
-	public int stroke_width;
-	public int color;
+	private int stroke_width;
+	private int color;
 	public ShapeDrawable drawable;
 
 	Shape()
@@ -34,7 +32,7 @@ public class Shape {
 		update();
 	}
 
-	public Drawable update()
+	private Drawable update()
 	{
 		drawable = new ShapeDrawable(new OvalShape());
 		drawable.getPaint().setStrokeWidth(stroke_width);

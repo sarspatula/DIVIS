@@ -27,9 +27,7 @@
 				android:layout_gravity="center"
 				app:popupTheme="@style/AppTheme.PopupOverlay"
 				app:layout_scrollFlags="scroll|enterAlways">
-
 			</android.support.v7.widget.Toolbar>
-
 		</FrameLayout>
 
 		<android.support.design.widget.TabLayout

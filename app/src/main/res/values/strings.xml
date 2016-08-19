@@ -94,4 +94,21 @@
 	<string name="msg_csv_written">CSV Row Written!</string>
 	<string name="msg_no_data_yet">No Data Yet!</string>
 	<string name="crash_toast_text">Crashed!  Sending log to Developer</string>
+
+	<!--memory analysis-->
+	<string name="total_memory">total_memory</string>
+	<string name="used_memory">used_memory</string>
+	<string name="battery_level">battery_level</string>
+	<string name="frag_calibrate_iv_canvas">frag_calibrate_iv_canvas</string>
+
+	<!--Calibrate screen-->
+	<string name="calibrate_column_title_x">X</string>
+	<string name="calibrate_column_title_y">Y</string>
+	<string name="calibrate_column_title_size">Size</string>
+	<string name="calibrate_row_title_upper">upper</string>
+	<string name="calibrate_row_title_lower">lower</string>
+
+	<!--Preferences-->
+	<string name="pref_filename">pref_filename</string>
+
 </resources>

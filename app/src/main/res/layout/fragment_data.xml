@@ -14,7 +14,7 @@
 		style="@style/MyToggleButton"
 		android:textOn="@string/btn_logging_on"
 		android:textOff="@string/btn_logging_off"
-		android:layout_columnSpan="3"
+
 		android:layout_width="match_parent"
 		android:background="@drawable/toggle_button_background" />
 
@@ -26,6 +26,9 @@
 		android:layout_marginBottom="24dp"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content" />
+
+
+
 
 	<ScrollView
 		android:layout_width="match_parent"
