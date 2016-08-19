@@ -1,44 +1,23 @@
 package com.example.m.divis;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.OvalShape;
 import android.hardware.Camera;
-import android.support.design.widget.TabLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-   
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.support.v4.app.Fragment;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -46,7 +25,6 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -57,19 +35,15 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import com.crashlytics.android.Crashlytics;
+
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 public class FragmentCalibrate extends Fragment {
 	private static final String TAG = "DIVISFragmentCalibrate";
-	SharedPreferences sharedPrefs;
+	private SharedPreferences sharedPrefs;
 
 	// class encapsulates drawable, draw style, center, and radius
 	private Shape mUpperShape = null;
@@ -97,9 +71,9 @@ public class FragmentCalibrate extends Fragment {
 //	private TextView mCameraPreviewResolution;
 	private EditText mMinRGBLevel;
 
-	Camera mCamera;
-	int mCaptureWidth;
-	int mCaptureHeight;
+	private Camera mCamera;
+	private int mCaptureWidth;
+	private int mCaptureHeight;
 
 	class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -337,7 +311,7 @@ public class FragmentCalibrate extends Fragment {
 		}
 	}
 
-	protected class MyOnTouchListener implements View.OnTouchListener {
+	class MyOnTouchListener implements View.OnTouchListener {
 		Shape shape;
 		PointF origin;
 		Point shape_origin;
@@ -416,7 +390,7 @@ public class FragmentCalibrate extends Fragment {
 		}
 	}
 
-	boolean pixelWithinArea(Point center, int radius, Point px)
+	private boolean pixelWithinArea(Point center, int radius, Point px)
 	{
 		// fast check
 		if(center.x - radius > px.x || center.x + radius < px.x ||
@@ -427,12 +401,10 @@ public class FragmentCalibrate extends Fragment {
 		int dx = center.x - px.x;
 		int dy = center.y - px.y;
 		int dist = (int)Math.floor(Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)));
-		if(dist > radius)
-			return false;
-		return true;
+		return dist <= radius;
 	}
 
-	boolean pixelWithinArea(Shape s, Point px)
+	private boolean pixelWithinArea(Shape s, Point px)
 	{
 		if(s == null)
 			return false;
@@ -440,7 +412,7 @@ public class FragmentCalibrate extends Fragment {
 	}
 
 	// Transform coordinates from screen to that of the imageview's drawable
-	public PointF transformCoordTouchToBitmap(float x, float y) {
+	private PointF transformCoordTouchToBitmap(float x, float y) {
 		Drawable d = mDrawingImageView.getDrawable();
 
 		float percentX = x / mDrawingImageView.getWidth();
@@ -470,6 +442,7 @@ public class FragmentCalibrate extends Fragment {
 	}
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		Log.e(TAG,"LifeCycle onCreateView");
 		sharedPrefs = getActivity().getPreferences(Context.MODE_PRIVATE);
 		View v = inflater.inflate(R.layout.fragment_calibrate, container, false);
 		mCameraView = v;
@@ -512,7 +485,7 @@ public class FragmentCalibrate extends Fragment {
 			child.setLayoutParams(lparams);
 		}
 
-		mMinRGBLevel.setText(Integer.toString(sharedPrefs.getInt(
+		mMinRGBLevel.setText(String.valueOf(sharedPrefs.getInt(
 						getString(R.string.saved_min_rgb_for_live_pixel),
 						Integer.parseInt(getString(R.string.saved_min_rgb_for_live_pixel_default)))));
 
@@ -555,7 +528,7 @@ public class FragmentCalibrate extends Fragment {
 		return v;
 	}
 
-	void setupCameraPreview(Context context)
+	private void setupCameraPreview(Context context)
 	{
 		if(mCamera == null)
 			return;
@@ -572,9 +545,10 @@ public class FragmentCalibrate extends Fragment {
 
 	}
 
-	void setupCameraExposureSpinner()
+	private void setupCameraExposureSpinner()
 	{
-		ArrayAdapter<String> adapter = new ArrayAdapter(getActivity(), R.layout.spinner_item);
+		ArrayAdapter<String> adapter;
+		adapter = new ArrayAdapter(getActivity(), R.layout.spinner_item);
 		Camera.Parameters params = mCamera.getParameters();
 		int min = params.getMinExposureCompensation();
 		int max = params.getMaxExposureCompensation();
@@ -607,9 +581,10 @@ public class FragmentCalibrate extends Fragment {
 		});
 	}
 
-	void setupCameraResolutionSpinner()
+	private void setupCameraResolutionSpinner()
 	{
-		ArrayAdapter<String> adapter = new ArrayAdapter(getActivity(), R.layout.spinner_item);
+		ArrayAdapter adapter;
+		adapter = new ArrayAdapter(getActivity(), R.layout.spinner_item);
 		Camera.Parameters params = mCamera.getParameters();
 		List<Camera.Size> capture_sizes = params.getSupportedPictureSizes();
 		for(int i=0; i<capture_sizes.size(); i++) {
@@ -658,7 +633,7 @@ public class FragmentCalibrate extends Fragment {
 		});
 	}
 
-	Point validateShapePosition(Point center, int radius)
+	private Point validateShapePosition(Point center, int radius)
 	{
 		if(center.x - radius < 0) {
 			int dx = radius - center.x;
@@ -679,7 +654,7 @@ public class FragmentCalibrate extends Fragment {
 		return center;
 	}
 
-	void updateDrawables()
+	private void updateDrawables()
 	{
 		mDrawingBitmap.eraseColor(Color.argb(0,0,0,0));
 
@@ -734,17 +709,17 @@ public class FragmentCalibrate extends Fragment {
 		mDrawingImageView.setScaleType(ImageView.ScaleType.FIT_XY);
 	}
 
-	void updateEditFields()
+	private void updateEditFields()
 	{
-		mEditUpperX.setText(Integer.toString(mUpperShape.center.x));
-		mEditUpperY.setText(Integer.toString(mUpperShape.center.y));
-		mEditUpperSize.setText(Integer.toString(mUpperShape.radius));
-		mEditLowerX.setText(Integer.toString(mLowerShape.center.x));
-		mEditLowerY.setText(Integer.toString(mLowerShape.center.y));
-		mEditLowerSize.setText(Integer.toString(mLowerShape.radius));
+		mEditUpperX.setText(String.valueOf(mUpperShape.center.x));
+		mEditUpperY.setText(String.valueOf(mUpperShape.center.y));
+		mEditUpperSize.setText(String.valueOf(mUpperShape.radius));
+		mEditLowerX.setText(String.valueOf(mLowerShape.center.x));
+		mEditLowerY.setText(String.valueOf(mLowerShape.center.y));
+		mEditLowerSize.setText(String.valueOf(mLowerShape.radius));
 	}
 
-	void updatePrefs()
+	private void updatePrefs()
 	{
 		Log.d(TAG, "updatePrefs");
 		SharedPreferences.Editor editor = sharedPrefs.edit();
@@ -768,21 +743,21 @@ public class FragmentCalibrate extends Fragment {
 		editor.commit();
 	}
 
-	void updateEditFieldsChanged()
+	private void updateEditFieldsChanged()
 	{
 		// validate input
 		if(mEditUpperX.getText().toString().isEmpty())
-			mEditUpperX.setText(Integer.toString(mUpperShape.center.x));
+			mEditUpperX.setText(String.valueOf(mUpperShape.center.x));
 		if(mEditUpperY.getText().toString().isEmpty())
-			mEditUpperY.setText(Integer.toString(mUpperShape.center.y));
+			mEditUpperY.setText(String.valueOf(mUpperShape.center.y));
 		if(mEditUpperSize.getText().toString().isEmpty())
-			mEditUpperSize.setText(Integer.toString(mUpperShape.radius));
+			mEditUpperSize.setText(String.valueOf(mUpperShape.radius));
 		if(mEditLowerX.getText().toString().isEmpty())
-			mEditLowerX.setText(Integer.toString(mLowerShape.center.x));
+			mEditLowerX.setText(String.valueOf(mLowerShape.center.x));
 		if(mEditLowerY.getText().toString().isEmpty())
-			mEditLowerY.setText(Integer.toString(mLowerShape.center.y));
+			mEditLowerY.setText(String.valueOf(mLowerShape.center.y));
 		if(mEditLowerSize.getText().toString().isEmpty())
-			mEditLowerSize.setText(Integer.toString(mLowerShape.radius));
+			mEditLowerSize.setText(String.valueOf(mLowerShape.radius));
 
 		Point p = new Point();
 		p.x = Integer.parseInt(mEditUpperX.getText().toString());
@@ -797,7 +772,7 @@ public class FragmentCalibrate extends Fragment {
 		mLowerShape.center = validateShapePosition(p, mLowerShape.radius);
 	}
 
-	void setupControlShapes()
+	private void setupControlShapes()
 	{
 		mUpperShape = new Shape();
 		mLowerShape = new Shape();
@@ -824,13 +799,15 @@ public class FragmentCalibrate extends Fragment {
 		((MainActivity)getActivity()).mViewPager.invalidate();
 	}
 
-	void setupEditTextListener(EditText et)
+	private void setupEditTextListener(final EditText et)
 	{
+		et.setTag(""+et.getId());
 		et.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
 					updateEditFieldsChanged();
+					Crashlytics.setString("UpdateDrawable","EditText Id="+et.getTag());
 					updateDrawables();
 					updateEditFields();
 					updatePrefs();
@@ -858,7 +835,7 @@ public class FragmentCalibrate extends Fragment {
 		});
 	}
 
-	void setupControlOverlay()
+	private void setupControlOverlay()
 	{
 		updateEditFields();
 		setupEditTextListener(mEditUpperX);
@@ -871,9 +848,11 @@ public class FragmentCalibrate extends Fragment {
 		setupEditTextListener(mMinRGBLevel);
 	}
 
+
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		Log.e(TAG,"LifeCycle onDestroy");
 		if(mPreview != null){
 			mPreview.destroyDrawingCache();
 			mPreview.mCamera = null;

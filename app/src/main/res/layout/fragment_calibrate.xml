@@ -7,7 +7,7 @@
 		android:id="@+id/camera_view"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:layout_weight="1" />
+		/>
 
 	<!-- focusable to prevent EditText from showing keyboard immediately -->
 	<!--
@@ -31,19 +31,19 @@
 
 		<com.example.m.divis.TextViewWithFont
 			style="@style/GridTextView"
-			android:text="X" />
+			android:text="@string/calibrate_column_title_x" />
 
 		<com.example.m.divis.TextViewWithFont
 			style="@style/GridTextView"
-			android:text="Y" />
+			android:text="@string/calibrate_column_title_y" />
 
 		<com.example.m.divis.TextViewWithFont
 			style="@style/GridTextView"
-			android:text="Size" />
+			android:text="@string/calibrate_column_title_size" />
 
 		<com.example.m.divis.TextViewWithFont
 			style="@style/GridTextView"
-			android:text="upper" />
+			android:text="@string/calibrate_row_title_upper" />
 
 		<com.example.m.divis.EditTextWithFont
 			android:id="@+id/upper_x"
@@ -68,7 +68,7 @@
 
 		<com.example.m.divis.TextViewWithFont
 			style="@style/GridTextView"
-			android:text="lower" />
+			android:text="@string/calibrate_row_title_lower" />
 
 		<com.example.m.divis.EditTextWithFont
 			android:id="@+id/lower_x"
@@ -156,6 +156,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:layout_alignParentTop="true"
-		android:layout_alignParentBottom="true" />
+		android:layout_alignParentBottom="true"
+		android:contentDescription="@string/frag_calibrate_iv_canvas"/>
 
 </RelativeLayout>

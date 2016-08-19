@@ -2,33 +2,13 @@ package com.example.m.divis;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.Point;
-import android.hardware.Camera;
-import android.os.Handler;
-import android.support.design.widget.TabLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-   
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.text.format.Time;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
-
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -36,17 +16,17 @@ import android.widget.TextView;
 
 public class FragmentSettings extends Fragment {
 	private static final String TAG = "DIVISFragmentSettings";
-	SharedPreferences sharedPrefs;
+	private SharedPreferences sharedPrefs;
 
-	EditText device_id;
-	EditText divis_id;
-	EditText app_version;
-	EditText location_id;
-	EditText location_name;
-	EditText location_detail;
-	EditText upper_sensor_depth;
-	EditText lower_sensor_depth;
-	EditText data_refresh_rate;
+	private EditText device_id;
+	private EditText divis_id;
+	private EditText app_version;
+	private EditText location_id;
+	private EditText location_name;
+	private EditText location_detail;
+	private EditText upper_sensor_depth;
+	private EditText lower_sensor_depth;
+	private EditText data_refresh_rate;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -69,7 +49,7 @@ public class FragmentSettings extends Fragment {
 		return v;
 	}
 
-	void loadSettings()
+	private void loadSettings()
 	{
 		device_id.setText(sharedPrefs.getString(
 					getString(R.string.saved_device_id),
@@ -89,18 +69,18 @@ public class FragmentSettings extends Fragment {
 		location_detail.setText(sharedPrefs.getString(
 					getString(R.string.saved_location_detail),
 					getString(R.string.saved_location_detail_default)));
-		upper_sensor_depth.setText(Integer.toString(sharedPrefs.getInt(
+		upper_sensor_depth.setText(String.valueOf(sharedPrefs.getInt(
 					getString(R.string.saved_upper_sensor_depth),
 					Integer.parseInt(getString(R.string.saved_upper_sensor_depth_default)))));
-		lower_sensor_depth.setText(Integer.toString(sharedPrefs.getInt(
+		lower_sensor_depth.setText(String.valueOf(sharedPrefs.getInt(
 					getString(R.string.saved_lower_sensor_depth),
 					Integer.parseInt(getString(R.string.saved_lower_sensor_depth_default)))));
-		data_refresh_rate.setText(Integer.toString(sharedPrefs.getInt(
+		data_refresh_rate.setText(String.valueOf(sharedPrefs.getInt(
 					getString(R.string.saved_data_refresh_rate),
 					Integer.parseInt(getString(R.string.saved_data_refresh_rate_default)))));
 	}
 
-	void updatePrefs()
+	private void updatePrefs()
 	{
 		Log.d(TAG, "updatePrefs");
 		SharedPreferences.Editor editor = sharedPrefs.edit();
@@ -125,7 +105,7 @@ public class FragmentSettings extends Fragment {
 		editor.commit();
 	}
 
-	void setupEditTextListener(EditText et)
+	private void setupEditTextListener(EditText et)
 	{
 		et.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 			@Override
@@ -156,7 +136,7 @@ public class FragmentSettings extends Fragment {
 		});
 	}
 
-	void setupListeners()
+	private void setupListeners()
 	{
 		setupEditTextListener(device_id);
 		setupEditTextListener(divis_id);
