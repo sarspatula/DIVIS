@@ -303,7 +303,7 @@ public class FragmentData extends Fragment {
         saveLowerData(lowerRadius, lowerCenterX, lowerCenterY);
 //        int upper_radius_squared = upperRadius * upperRadius;
 //        int lower_radius_squared = lowerRadius * lowerRadius;
-
+        freeBitmapResource(imageCaptured);
 
         Time now = new Time();
         now.setToNow();
@@ -416,6 +416,7 @@ public class FragmentData extends Fragment {
 
 //        mLastBitmap = bmp;
 
+        Log.e("PixelsRange", "upperRAvg=" + upperRAvg+" ,lowerRAvg="+lowerRAvg+"\n upperGAvg"+upperGAvg+" ,lowerGAvg="+lowerGAvg+"\n ,upperBAvg="+upperBAvg+" ,lowerBAvg"+lowerBAvg);
         mActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -442,11 +443,13 @@ public class FragmentData extends Fragment {
         int maxY1 = lowerCenterY + lowerRadius;
         Log.e("PixelsRange", "Lower W*H===>" + (maxX1 - minX1) * (maxY1 - minY1) + "\n maxX1::" + maxX1 + " ,minX1::" + minX1 + " ,maxY1::" + maxY1 + " ,minY1::" + minY1);
 
-        Bitmap bitmapLower = Bitmap.createBitmap(imageCaptured, minX1, minY1, (maxX1 - minX1), (maxY1 - minY1));
-        Log.e("PixelsRange", "bitmapLower width::" + bitmapLower.getWidth() + " ,height::" + bitmapLower.getHeight());
-        getLowerImageData(0, bitmapLower.getWidth(), 0, bitmapLower.getHeight());
-        freeBitmapResource(bitmapLower);
-        freeBitmapResource(imageCaptured);
+//        Bitmap bitmapLower = Bitmap.createBitmap(imageCaptured, minX1, minY1, (maxX1 - minX1), (maxY1 - minY1));
+//        Bitmap bitmapLower = imageCaptured;
+//        Log.e("PixelsRange", "bitmapLower width::" + bitmapLower.getWidth() + " ,height::" + bitmapLower.getHeight());
+        getLowerImageData(minX1, maxX1, minY1, maxY1,imageCaptured);
+//        getLowerImageData(0, bitmapLower.getWidth(), 0, bitmapLower.getHeight(),bitmapLower);
+//        freeBitmapResource(bitmapLower);
+//        freeBitmapResource(imageCaptured);
     }
 
     private void saveUpperData(int upperRadius, int upperCenterX, int upperCenterY) {
@@ -456,10 +459,12 @@ public class FragmentData extends Fragment {
         int maxY = upperCenterY + upperRadius;
         Log.e("PixelsRange", "Upper W*H===>" + (maxX - minX) * (maxY - minY) + "\n maxX::" + maxX + " ,minX::" + minX + " ,maxY::" + maxY + " ,minY::" + minY);
 
-        Bitmap bitmapUpper = Bitmap.createBitmap(imageCaptured, minX, minY, (maxX - minX), (maxY - minY));
-        Log.e("PixelsRange", "bitmapUpper width::" + bitmapUpper.getWidth() + " ,height::" + bitmapUpper.getHeight());
-        getUpperImageData(0, bitmapUpper.getWidth(), 0, bitmapUpper.getHeight());
-        freeBitmapResource(bitmapUpper);
+//        Bitmap bitmapUpper = imageCaptured;
+//        Bitmap bitmapUpper = Bitmap.createBitmap(imageCaptured, minX, minY, (maxX - minX), (maxY - minY));
+//        Log.e("PixelsRange", "bitmapUpper width::" + bitmapUpper.getWidth() + " ,height::" + bitmapUpper.getHeight());
+        getUpperImageData(minX, maxX, minY, maxY,imageCaptured);
+//        getUpperImageData(0, bitmapUpper.getWidth(), 0, bitmapUpper.getHeight(),bitmapUpper);
+//        freeBitmapResource(bitmapUpper);
     }
 
     private void setDefaultValues() {
@@ -484,10 +489,10 @@ public class FragmentData extends Fragment {
         lowerBAvg = 0;
     }
 
-    private void getLowerImageData(int minX1, int maxX1, int minY1, int maxY1) {
+    private void getLowerImageData(int minX1, int maxX1, int minY1, int maxY1, Bitmap bitmapLower) {
         for (int i = minX1; i < maxX1; i++) {
             for (int j = minY1; j < maxY1; j++) {
-                int c = imageCaptured.getPixel(i, j);
+                int c = bitmapLower.getPixel(i, j);
                 if (pixelIsLive(c)) {
                     lowerLive++;
 
@@ -503,11 +508,11 @@ public class FragmentData extends Fragment {
         }
     }
 
-    private void getUpperImageData(int minX, int maxX, int minY, int maxY) {
+    private void getUpperImageData(int minX, int maxX, int minY, int maxY, Bitmap bitmapUpper) {
         for (int i = minX; i < maxX; i++) {
             for (int j = minY; j < maxY; j++) {
 
-                int c = imageCaptured.getPixel(i, j);
+                int c = bitmapUpper.getPixel(i, j);
                 if (pixelIsLive(c)) {
                     upperLive++;
                     if (!pixelIsWashed(c)) {
@@ -518,7 +523,6 @@ public class FragmentData extends Fragment {
                     } else {
                         upperWashed++;
                     }
-
                 }
 				/*if(pixelIsWashed(c))
 					upperWashed++;

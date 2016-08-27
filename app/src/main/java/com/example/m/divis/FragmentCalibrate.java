@@ -310,6 +310,9 @@ public class FragmentCalibrate extends Fragment {
 			return optimalSize;
 		}
 	}
+//	public void forceCrash(View view) {
+//		throw new RuntimeException("This is a crash");
+//	}
 
 	class MyOnTouchListener implements View.OnTouchListener {
 		Shape shape;
@@ -597,7 +600,8 @@ public class FragmentCalibrate extends Fragment {
 				getString(R.string.saved_camera_resolution_index),
 				Integer.parseInt(getString(R.string.saved_camera_resolution_index_default)));
 		if(savedResolutionIndex > capture_sizes.size()-1) {
-			savedResolutionIndex = capture_sizes.size()-1;
+//			savedResolutionIndex = capture_sizes.size()-1;
+			savedResolutionIndex = 1;
 			SharedPreferences.Editor editor = sharedPrefs.edit();
 			editor.putInt(
 					getString(R.string.saved_camera_resolution_index),

@@ -25,6 +25,13 @@
 		android:rowCount="5"
 		android:orientation="horizontal">
 		<!-- android:focusableInTouchMode="true" -->
+		<!--<Button
+			android:layout_height="wrap_content"
+			android:layout_width="wrap_content"
+			android:text="Force Crash!"
+			android:onClick="forceCrash"
+			android:layout_centerVertical="true"
+			android:layout_centerHorizontal="true" />-->
 
 		<com.example.m.divis.TextViewWithFont
 			style="@style/GridTextView" />
