@@ -55,7 +55,7 @@ public class FragmentData extends Fragment {
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
     private SharedPreferences sharedPrefs;
     private MainActivity mActivity;
-
+//test comment added
     // text views
     private TextView mTimestamp;
     private TextView mSecciDepth;
