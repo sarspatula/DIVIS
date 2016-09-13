@@ -3,12 +3,14 @@ package com.example.m.divis;
 import android.Manifest;
 import android.app.ActionBar;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
 import android.graphics.Typeface;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -26,15 +28,11 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
-import com.crashlytics.android.Crashlytics;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "DIVISMainActivity";
@@ -62,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Native camera.
     public Camera mCamera;
-
+    Camera.Parameters params;
     // size of image captured by camera, set to largest available
     private Camera.Size mCaptureSize;
     // adjusted by device orientation
@@ -72,12 +70,13 @@ public class MainActivity extends AppCompatActivity {
     public int mCameraRotation;
 
     private static int index_of_back_camera = 0;
+    private boolean isActivityActive;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.e(TAG,"LifeCycle onCreate");
         sharedPrefs = getPreferences(Context.MODE_PRIVATE);
-        setTimerRamCleaner();
+        isActivityActive=true;
         // for hiding titlebar
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -92,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
             actionBar.hide();
 
         super.onCreate(savedInstanceState);
-        Fabric.with(this, new Crashlytics());
+//        Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
 
         // for hiding titlebar
@@ -144,10 +143,91 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(mViewPager);
 
         setupCamera();
+//        setTimerRamCleaner();
+
+       /* if(((MainActivity)getActivity()).getLogToCSV()){
+            if (((MainActivity)getActivity()).mViewPager != null) {
+                ((MainActivity)getActivity()).mViewPager.setCurrentItem(2);
+            }
+        }*/
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //Do something after 100ms
+                if (isActivityActive) {
+                    freeMemory();
+
+//                                MainActivity.this.onRestart();// Such as "sendEmail()"
+                    Intent newIntent = new Intent(MainActivity.this, MainActivity.class);
+
+                    startActivity(newIntent);
+
+                    Log.e("TimerTask","Activity reseted");
+                }
+            }
+        }, 3600000);
+
+
+        final Handler handlerData = new Handler();
+        handlerData.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //Do something after 100ms
+                if (isActivityActive) {
+                    if(getLogToCSV()){
+                        if (mViewPager != null) {
+                           mViewPager.setCurrentItem(2,true);
+                        }
+                    }
+                }
+            }
+        }, 10000);
     }
 
     private void setTimerRamCleaner() {
-        ScheduledExecutorService scheduler =
+
+
+
+
+        ScheduledExecutorService scheduler = Executors
+                .newScheduledThreadPool(1);
+
+        scheduler.scheduleWithFixedDelay(new Runnable() {
+            public void run() {
+                if (getLogToCSV()) {
+                    try {
+                        MainActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                              /*  if (mCamera != null) {
+                                    mCamera.stopPreview();
+                                    mCamera.release();
+                                    mCamera = null;
+                                }*/
+
+                                freeMemory();
+
+//                                MainActivity.this.onRestart();// Such as "sendEmail()"
+                                Intent newIntent = new Intent(MainActivity.this, MainActivity.class);
+
+                                startActivity(newIntent);
+
+                                Log.e("TimerTask","Activity reseted");
+                            }
+                        });
+                        // call service
+                        } catch (Exception e) {
+                        e.printStackTrace(); // Or better, use next line if you have configured a logger:
+                        Log.e("TimerTask","Exception in scheduled task");
+                    }
+                }
+            }
+        }, 30, 30, TimeUnit.SECONDS);
+
+
+       /* ScheduledExecutorService scheduler =
                 Executors.newSingleThreadScheduledExecutor();
 
         scheduler.scheduleAtFixedRate
@@ -155,8 +235,13 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         // call service
                         freeMemory();
+                        MainActivity.this.recreate();
                     }
-                }, 0, 1, TimeUnit.HOURS);
+                }, 5, 20, TimeUnit.SECONDS);*/
+    }
+
+    public boolean getLogToCSV(){
+        return sharedPrefs.getBoolean(getString(R.string.mLoggingToCSV),false);
     }
 
     private void freeMemory() {
@@ -182,6 +267,12 @@ public class MainActivity extends AppCompatActivity {
                     MY_PERMISSIONS_REQUEST_CAMERA);
         }
         return opened;
+    }
+
+    @Override
+    protected void onPause() {
+        isActivityActive=false;
+        super.onPause();
     }
 
     @Override
@@ -227,7 +318,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             // determine capture size
-            Camera.Parameters params = mCamera.getParameters();
+            if (mCamera != null) {
+                if (mCamera.getParameters() != null) {
+                    params = mCamera.getParameters();
+                }
+            }
             List<Camera.Size> capture_sizes = params.getSupportedPictureSizes();
             int savedResolutionIndex = sharedPrefs.getInt(
                     getString(R.string.saved_camera_resolution_index),
@@ -332,13 +427,14 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
-        Log.e(TAG,"LifeCycle onDestroy");
+        Log.e(TAG,"LifeCycle MainActivity onDestroy");
         if (mCamera != null) {
             mCamera.stopPreview();
-            mCamera.release();
-            mCamera = null;
+//            mCamera.release();
+//            mCamera = null;
         }
+        super.onDestroy();
+
     }
 
     /**

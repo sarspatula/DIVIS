@@ -109,6 +109,8 @@ public class FragmentData extends Fragment {
     String sTime;
     Bitmap imageCaptured;
     // TODO: optimization: use raw instead of jpeg when available
+
+
     File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
     private int upperCenterX;
     private int upperCenterY;
@@ -146,45 +148,54 @@ public class FragmentData extends Fragment {
 
         @Override
         public void onPictureTaken(byte[] jpeg, Camera camera) {
-            Log.d(TAG, "onPictureTaken (Jpeg)");
-            class AnalyzerTask implements Runnable {
-                byte[] jpeg;
+            try {
+                Log.d(TAG, "onPictureTaken (Jpeg)");
 
-                AnalyzerTask(byte[] jpeg) {
-                    this.jpeg = jpeg;
-                }
-
-                public void run() {
-                    if (!isAdded())
-                        return;
-                    try {
-                        analyzeImage(jpeg);
-                    } catch (OutOfMemoryError ex) {
-                        ex.printStackTrace();
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-
-                    getMemoryStatastics();
-                    getBatteryInfo();
-
-                    if (mLoggingToCSV) {
-                        mActivity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (!isAdded())
-                                    return;
-                                writeToCsv();
-                            }
-                        });
-                    }
-                }
+                Thread t = new Thread(new AnalyzerTask(jpeg));
+                t.start();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            Thread t = new Thread(new AnalyzerTask(jpeg));
-            t.start();
         }
     }
 
+    class AnalyzerTask implements Runnable {
+        byte[] jpeg;
+
+        AnalyzerTask(byte[] jpeg) {
+            this.jpeg = jpeg;
+        }
+
+        public void run() {
+            try {
+                if (!isAdded())
+                    return;
+                try {
+                    analyzeImage(jpeg);
+                } catch (OutOfMemoryError ex) {
+                    ex.printStackTrace();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
+                getMemoryStatastics();
+                getBatteryInfo();
+
+                if (getLogToCSV()) {
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!isAdded())
+                                return;
+                            writeToCsv();
+                        }
+                    });
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     private void getBatteryInfo() {
         if (getActivity() != null) {
@@ -434,6 +445,7 @@ public class FragmentData extends Fragment {
 
         // schedule next timer
         timerHandler.postDelayed(timerRunnable, 500);
+
     }
 
     private void saveLowerData(int lowerRadius, int lowerCenterX, int lowerCenterY) {
@@ -805,7 +817,7 @@ public class FragmentData extends Fragment {
 //                mLastBitmap = null;
 
                 // update counter
-                if (mLoggingToCSV) {
+                if (getLogToCSV()) {
                     mCounter.setText(getString(R.string.data_counter_prefix) +
                             String.valueOf(++mCount));
                 } else {
@@ -816,19 +828,21 @@ public class FragmentData extends Fragment {
                 // callbacks: shutter, raw, post view, jpeg
 
                 try {
-                    Time now = new Time();
-                    now.setToNow();
-                    Log.e("Before pick taken", now.format("%Y_%m_%d_%H_%M_%S"));
+                        Time now = new Time();
+                        now.setToNow();
+                        if(mActivity.mCamera == null){
+                            Log.e("Before pick taken","camera null");
+                        }
 
-                    mActivity.mCamera.takePicture(null, null, null, mJpegCallback);
-                    now.setToNow();
+                        Log.e("Before pick taken", now.format("%Y_%m_%d_%H_%M_%S"));
 
+                        mActivity.mCamera.takePicture(null, null, null, mJpegCallback);
+                        now.setToNow();
                 } catch (Exception e) {
                     // "E/Camera: Error 100" and "Camera service died!"
                     // NOTE: fixed by not re-enabling preview until calibrate
                     // screen shown.
                     Log.d(TAG, e.toString());
-                    Toast.makeText(mActivity, e.toString(), Toast.LENGTH_LONG).show();
                 }
             }
 
@@ -898,12 +912,15 @@ public class FragmentData extends Fragment {
         mCounter = (TextView) v.findViewById(R.id.counter);
 
         mButtonSave = (ToggleButton) v.findViewById(R.id.btn_write_csv);
+        mButtonSave.setChecked(getLogToCSV());
         mButtonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mButtonSave.isChecked()) {
                     if (!mSecciDepth.getText().toString().isEmpty()) {
                         mLoggingToCSV = true;
+                        updateLogToCSV(true);
+
                     } else {
                         mButtonSave.setChecked(false);
                         new AlertDialog.Builder(mActivity)
@@ -914,12 +931,14 @@ public class FragmentData extends Fragment {
                                     public void onClick(DialogInterface dialog, int whichButton) {
                                         mButtonSave.setChecked(true);
                                         mLoggingToCSV = true;
+                                        updateLogToCSV(true);
                                     }
                                 })
                                 .setNegativeButton(android.R.string.no, null).show();
                     }
                 } else {
                     mLoggingToCSV = false;
+                    updateLogToCSV(false);
                 }
                 //writeToCsv();
             }
@@ -973,6 +992,16 @@ public class FragmentData extends Fragment {
         return v;
     }
 
+    private void updateLogToCSV(Boolean mLoggingToCSV){
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.putBoolean(getString(R.string.mLoggingToCSV),
+                mLoggingToCSV);
+        editor.commit();
+    }
+
+    private boolean getLogToCSV(){
+        return sharedPrefs.getBoolean(getString(R.string.mLoggingToCSV),false);
+    }
     private void updatePrefs() {
         Log.d(TAG, "updatePrefs");
         SharedPreferences.Editor editor = sharedPrefs.edit();
@@ -989,6 +1018,7 @@ public class FragmentData extends Fragment {
         super.onPause();
         Log.e(TAG, "LifeCycle onPause");
         if (isAdded()) {
+            previewHandler.removeCallbacks(previewRunnable);
             timerHandler.removeCallbacks(timerRunnable);
         }
     }
@@ -997,10 +1027,19 @@ public class FragmentData extends Fragment {
     public void onResume() {
         super.onResume();
         Log.e(TAG, "LifeCycle onResume");
-        if (isAdded()) {
-            timerHandler.removeCallbacks(timerRunnable);
-            timerHandler.postDelayed(timerRunnable, 1000);
-        }
+        final Handler handlerData = new Handler();
+        handlerData.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //Do something after 100ms
+                if (isAdded()) {
+                    timerHandler.removeCallbacks(timerRunnable);
+                    timerHandler.postDelayed(timerRunnable, 1000);
+                }
+            }
+        }, 3000);
+
+
     }
 
     private boolean pixelIsLive(int c) {
@@ -1031,5 +1070,14 @@ public class FragmentData extends Fragment {
 		if(dist_squared > radius_squared)
 			return false;*/
         return true;
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.e(TAG,"LifeCycle FragmentData onDestroy");
+        freeBitmapResource(imageCaptured);
+
+        super.onDestroy();
+
     }
 }

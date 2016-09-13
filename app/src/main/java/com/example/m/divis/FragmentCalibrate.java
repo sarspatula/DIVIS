@@ -74,6 +74,7 @@ public class FragmentCalibrate extends Fragment {
 	private Camera mCamera;
 	private int mCaptureWidth;
 	private int mCaptureHeight;
+	public static boolean isVisibleToUser=false;
 
 	class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -147,6 +148,7 @@ public class FragmentCalibrate extends Fragment {
 		public void surfaceCreated(SurfaceHolder holder) {
 			try {
 				mCamera.setPreviewDisplay(holder);
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -432,6 +434,7 @@ public class FragmentCalibrate extends Fragment {
 
 		if (isVisibleToUser&&mCamera!=null) {
 			try {
+				this.isVisibleToUser=isVisibleToUser;
 				mCamera.reconnect();
 				mCamera.startPreview();
 			} catch (Exception e) {
@@ -539,6 +542,9 @@ public class FragmentCalibrate extends Fragment {
 		FrameLayout preview = (FrameLayout) mCameraView.findViewById(R.id.camera_view);
 		preview.addView(mPreview);
 		mPreview.startCameraPreview();
+
+
+
 	}
 
 	public void onCameraReady()
@@ -569,11 +575,24 @@ public class FragmentCalibrate extends Fragment {
 		mCameraExposure.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-				Camera.Parameters params = mCamera.getParameters();
-				int min = params.getMinExposureCompensation();
-				int idx = position + min;
-				params.setExposureCompensation(idx);
-				mCamera.setParameters(params);
+				try {
+					Camera.Parameters params = null;
+					if (mCamera != null) {
+                        if (mCamera.getParameters()!= null) {
+                            params = mCamera.getParameters();
+                        }else{
+                            params= ((MainActivity)getActivity()).params;
+                        }
+                    }else{
+                        params= ((MainActivity)getActivity()).params;
+                    }
+					int min = params.getMinExposureCompensation();
+					int idx = position + min;
+					params.setExposureCompensation(idx);
+					mCamera.setParameters(params);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 
 			@Override
@@ -702,7 +721,13 @@ public class FragmentCalibrate extends Fragment {
 				paint);
 
 		MainActivity act = (MainActivity)getActivity();
-		Camera.Parameters params = act.mCamera.getParameters();
+		Camera.Parameters params = null;
+		try {
+			params = act.mCamera.getParameters();
+		} catch (Exception e) {
+			e.printStackTrace();
+			params = act.params;
+		}
 		Camera.Size sz = params.getPreviewSize();
 		c.drawText(sz.width + "x" + sz.height,
 				0,
@@ -855,11 +880,13 @@ public class FragmentCalibrate extends Fragment {
 
 	@Override
 	public void onDestroy() {
-		super.onDestroy();
 		Log.e(TAG,"LifeCycle onDestroy");
 		if(mPreview != null){
 			mPreview.destroyDrawingCache();
 			mPreview.mCamera = null;
 		}
+		mDrawingBitmap=null;
+		super.onDestroy();
+
 	}
 }
