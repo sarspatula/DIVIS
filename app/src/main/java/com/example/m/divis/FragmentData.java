@@ -623,6 +623,8 @@ public class FragmentData extends Fragment {
             String file_header = "# device_ID, divis_ID, app_version, location_ID, location_Name, location_Detail, upper_Sensor_Depth, lower_Sensor_Depth, date_time, secci_depth, live_pixels_upper, washed_pixels_upper, data_pixels_upper, avg_r_upper, avg_g_upper, avg_b_upper, live_pixels_lower, washed_pixels_lower, data_pixels_lower, avg_r_lower, avg_g_lower, avg_b_lower, camera_exposure, min_rgb_for_live_pixel, upper_x, upper_y, upper_size, lower_x, lower_y, lower_size, total_memory, used_memory, battery_level\n";
             if (write_header) {
                 fileWriter.append(file_header);
+                mCount = 0;
+                updateCountSP(mCount);
             } else {
                 changeHeader(file_header, filename);
             }
@@ -818,10 +820,11 @@ public class FragmentData extends Fragment {
 
                 // update counter
                 if (getLogToCSV()) {
+                    updateCountSP(getCountSP()+1);
                     mCounter.setText(getString(R.string.data_counter_prefix) +
-                            String.valueOf(++mCount));
+                            String.valueOf(getCountSP()));
                 } else {
-                    mCount = 0;
+                    updateCountSP(0);
                     mCounter.setText(getString(R.string.data_counter_zeroed));
                 }
 
@@ -974,12 +977,10 @@ public class FragmentData extends Fragment {
             public void onPageSelected(int position) {
                 timerHandler.removeCallbacks(timerRunnable);
                 if (position == 2) {
-
                     timerHandler.postDelayed(timerRunnable, 1000);
                 }
 				/*else if(position==1){
 					mActivity.setupCamera();
-
 				}
 */
             }
@@ -989,6 +990,15 @@ public class FragmentData extends Fragment {
             }
         });
 
+        // update counter
+        if (getLogToCSV()) {
+            updateCountSP(getCountSP()+1);
+            mCounter.setText(getString(R.string.data_counter_prefix) +
+                    String.valueOf(getCountSP()));
+        } else {
+            updateCountSP(0);
+            mCounter.setText(getString(R.string.data_counter_zeroed));
+        }
         return v;
     }
 
@@ -1001,6 +1011,17 @@ public class FragmentData extends Fragment {
 
     private boolean getLogToCSV(){
         return sharedPrefs.getBoolean(getString(R.string.mLoggingToCSV),false);
+    }
+
+    private void updateCountSP(Integer mCounter){
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.putInt(getString(R.string.mCounter),
+                mCounter);
+        editor.commit();
+    }
+
+    private int getCountSP(){
+        return sharedPrefs.getInt(getString(R.string.mCounter),0);
     }
     private void updatePrefs() {
         Log.d(TAG, "updatePrefs");
@@ -1074,7 +1095,7 @@ public class FragmentData extends Fragment {
 
     @Override
     public void onDestroy() {
-        Log.e(TAG,"LifeCycle FragmentData onDestroy");
+        Log.e(TAG,TAG+"LifeCycle FragmentData onDestroy");
         freeBitmapResource(imageCaptured);
 
         super.onDestroy();

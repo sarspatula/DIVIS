@@ -71,6 +71,7 @@
     <string name="calibrate_min_rgb">Live RGB Minimum</string>
 
 	<!-- Data screen -->
+	<string name="mCounter">mCounter</string>
 	<string name="mLoggingToCSV">mLoggingToCSV</string>
 	<string name="btn_write_csv">Log to CSV</string>
 	<string name="btn_logging_on">Logging to CSV</string>

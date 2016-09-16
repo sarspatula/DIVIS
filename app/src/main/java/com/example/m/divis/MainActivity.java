@@ -71,6 +71,10 @@ public class MainActivity extends AppCompatActivity {
 
     private static int index_of_back_camera = 0;
     private boolean isActivityActive;
+    private long DATA_SHIFT_DURATION=3000;
+    private long ACTIVITY_RESET_DURATION=10000;
+//    private long DATA_SHIFT_DURATION=10000;
+//    private long ACTIVITY_RESET_DURATION=3600000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,16 +162,17 @@ public class MainActivity extends AppCompatActivity {
                 //Do something after 100ms
                 if (isActivityActive) {
                     freeMemory();
-
+//                    mCamera.stopPreview();
 //                                MainActivity.this.onRestart();// Such as "sendEmail()"
-                    Intent newIntent = new Intent(MainActivity.this, MainActivity.class);
+                    MainActivity.this.recreate();
+                  /*  Intent newIntent = new Intent(MainActivity.this, MainActivity.class);
 
                     startActivity(newIntent);
-
+                    finish();*/
                     Log.e("TimerTask","Activity reseted");
                 }
             }
-        }, 3600000);
+        }, ACTIVITY_RESET_DURATION);
 
 
         final Handler handlerData = new Handler();
@@ -183,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-        }, 10000);
+        }, DATA_SHIFT_DURATION);
     }
 
     private void setTimerRamCleaner() {
@@ -245,9 +250,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void freeMemory() {
-        System.runFinalization();
+      /*  System.runFinalization();
         Runtime.getRuntime().gc();
-        System.gc();
+        System.gc();*/
 
         Log.e("Memory", "freeMemory executed...");
     }
@@ -272,6 +277,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         isActivityActive=false;
+
         super.onPause();
     }
 
@@ -400,7 +406,7 @@ public class MainActivity extends AppCompatActivity {
      *
      * @return
      */
-    private static Camera getCameraInstance() {
+    private Camera getCameraInstance() {
         Camera c = null;
         Log.d(TAG, "INFO, <getCameraInstance>");
         try {
@@ -416,6 +422,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                 }
+                releaseCameraAndPreview();
                 c = Camera.open(index_of_back_camera);
             }
         } catch (Exception e) {
@@ -425,14 +432,23 @@ public class MainActivity extends AppCompatActivity {
         return c;
     }
 
+    private void releaseCameraAndPreview() {
+
+        if (mCamera != null) {
+            mCamera.release();
+            mCamera = null;
+        }
+    }
+
     @Override
     public void onDestroy() {
         Log.e(TAG,"LifeCycle MainActivity onDestroy");
-        if (mCamera != null) {
+       /* if (mCamera != null) {
+
             mCamera.stopPreview();
-//            mCamera.release();
-//            mCamera = null;
-        }
+            mCamera = null;
+        }*/
+        releaseCameraAndPreview();
         super.onDestroy();
 
     }

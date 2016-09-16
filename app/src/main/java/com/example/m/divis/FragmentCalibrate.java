@@ -36,8 +36,6 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.crashlytics.android.Crashlytics;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -160,7 +158,13 @@ public class FragmentCalibrate extends Fragment {
 		 */
 		public void surfaceDestroyed(SurfaceHolder holder) {
 			if (mCamera != null){
-				mCamera.stopPreview();
+
+				try {
+					mCamera.stopPreview();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
 			}
 		}
 
@@ -836,7 +840,7 @@ public class FragmentCalibrate extends Fragment {
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_ACTION_PREVIOUS) {
 					updateEditFieldsChanged();
-					Crashlytics.setString("UpdateDrawable","EditText Id="+et.getTag());
+//					Crashlytics.setString("UpdateDrawable","EditText Id="+et.getTag());
 					updateDrawables();
 					updateEditFields();
 					updatePrefs();
@@ -854,11 +858,15 @@ public class FragmentCalibrate extends Fragment {
 		et.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 			@Override
 			public void onFocusChange(View v, boolean hasFocus) {
-				if (!hasFocus) {
-					updateEditFieldsChanged();
-					updateDrawables();
-					updateEditFields();
-					updatePrefs();
+				try {
+					if (!hasFocus) {
+                        updateEditFieldsChanged();
+                        updateDrawables();
+                        updateEditFields();
+                        updatePrefs();
+                    }
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 		});
@@ -880,7 +888,7 @@ public class FragmentCalibrate extends Fragment {
 
 	@Override
 	public void onDestroy() {
-		Log.e(TAG,"LifeCycle onDestroy");
+		Log.e(TAG,TAG+"LifeCycle onDestroy");
 		if(mPreview != null){
 			mPreview.destroyDrawingCache();
 			mPreview.mCamera = null;
