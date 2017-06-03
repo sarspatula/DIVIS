@@ -2,9 +2,15 @@
 // DIVIS VERSION NOTES
 //========================================
 
-// v 0081
+// v 0082
 // add nighttime scheduling and deep sleep per cycle functionality
 // fixed bug where string length was causing the API to be truncated on the thingspeak json. converted measurement values to integers before adding to the json string.
+// added two particle.publish events to be able to view the currentHour and runtime
+
+//========================================
+// Test Status: Not tested
+//========================================
+
 
 //========================================
 // Resources
@@ -131,7 +137,7 @@ Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS3472
 //*****************Configuration Variables***********************
 #define g_numDevice 4 // set number of TCS devices
 #define g_sample 150 // set number of samples per cycle
-#define sleepHour 22 // set 24 hour time to start night sleep
+#define sleepHour 21 // set 24 hour time to start night sleep
 #define wakeHour 6 // set 24 hour time to wake
 #define restTime 240 // set time to rest between cycles in seconds
 //***************************************************************
@@ -271,7 +277,7 @@ if(printbool==1){
 // creates aggregate data in an array then overrights that data with the mean
 void sampleMulti(int numDevice, int samples, bool printbool, bool multiprintbool){
 	unsigned long start = millis();
-	float runtime = 0;
+	 float runtime = 0;
 	 float r [numDevice];
 	 float g [numDevice];
 	 float b [numDevice];
@@ -307,6 +313,7 @@ for (int i=0; i<numDevice; i++){
 
 
 		runtime = (millis() - start)/1000;
+		Particle.publish("runtime",runtime,60,PRIVATE);
 
 if (multiprintbool == 1) {
 		for (int i=0; i<numDevice; i++){
@@ -336,6 +343,7 @@ void publishToThingSpeak(){
 
 void nightTimeSchedule(){
 	int currentHour = Time.hour();
+	Particle.publish("hour", currentHour, 60, PRIVATE);
 	int sleepTime = (24 - sleepHour + wakeHour + 1) * 60 * 60; // converts sleep and wake hours to a sleep time in seconds
 	if (currentHour >= sleepHour){
 		System.sleep(SLEEP_MODE_DEEP, sleepTime);
