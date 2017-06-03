@@ -1,0 +1,23 @@
+Statistics library
+Simple counting, mean and standard deviation calculation
+Not yet tested.
+  https://github.com/RobTillaart/Arduino/tree/master/libraries/Statistic
+  http://playground.arduino.cc/Main/Statistics
+
+TCA9548A I2C Multiplexer Library
+Port of Arduino code to Particle (Photon and Electron).
+Tested and works.
+  //source: // https://github.com/rickkas7/TCA9548A-RK
+
+
+Journal Article:
+USING OCEAN COLOUR REMOTE SENSING PRODUCTS TO ESTIMATE TURBIDITY AT THE WADDEN SEA TIME SERIES STATION SPIEKEROOG
+http://www.jeos.org/index.php/jeos_rp/article/view/14020
+
+
+Article: Very high level overview of light absorption in seawater.
+https://www.britannica.com/science/seawater/Optical-properties
+
+
+Library to use multiple spark pins as communication with I2C devices with the same addres e.g. TCS34725
+https://community.particle.io/t/new-proposed-libraries-softi2cmaster-and-tcs34725/10290

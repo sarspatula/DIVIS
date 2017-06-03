@@ -1,31 +1,35 @@
 # DIVIS
 
-"How's the vis?", is perhaps THE question among leisure divers. Observing any popular dive site in the cold waters of the Puget Sound, WA USA, for example, would reveal interest in water visibility to be near universal. It is the first question asked by any diver arriving on site to their colleagues emerging from the water.
- 
-Our objective is to create an affordable, reliable and accurate system capable of predicting same day and forecasted water visibility.
+A Particle project named DIVIS
 
-The DIVIS sensor as currently designed can be printed and assembled as a DIY project with minimal skill requirements. 
+## Welcome to your project!
 
-DIY ready hardward plans + app are currently under development. Check back soon. 
+Every new Particle project is composed of 3 important elements that you'll see have been created in your project directory for DIVIS.
 
+#### ```/src``` folder:  
+This is the source folder that contains the firmware files for your project. It should *not* be renamed. 
+Anything that is in this folder when you compile your project will be sent to our compile service and compiled into a firmware binary for the Particle device that you have targeted.
 
+If your application contains multiple files, they should all be included in the `src` folder. If your firmware depends on Particle libraries, those dependencies are specified in the `project.properties` file referenced below.
 
-SPECIFIC SUCCESS CRITERIA
-* < $100 to build and deploy
-* < $10 salvage/blackmarket value
-* < $100 / yr to operate/maintain
-* > 6 months in water with no maintenance
-* < 3 feet (1 meter) margin of error thoughout a deployment
- 
+#### ```.ino``` file:
+This file is the firmware that will run as the primary application on your Particle device. It contains a `setup()` and `loop()` function, and can be written in Wiring or C/C++. For more information about using the Particle firmware API to create firmware for your Particle device, refer to the [Firmware Reference](https://docs.particle.io/reference/firmware/) section of the Particle documentation.
 
+#### ```project.properties``` file:  
+This is the file that specifies the name and version number of the libraries that your project depends on. Dependencies are added automatically to your `project.properties` file when you add a library to a project using the `particle library add` command in the CLI or add a library in the Desktop IDE.
 
-ABOUT THE NAME
+## Adding additional files to your project
 
-DIVIS is simply a combination of DIV-er and VIS-ibility. It is pronounced die-viss; a soft "s" sound not a "z".
+#### Projects with multiple sources
+If you would like add additional files to your application, they should be added to the `/src` folder. All files in the `/src` folder will be sent to the Particle Cloud to produce a compiled binary.
 
+#### Projects with external libraries
+If your project includes a library that has not been registered in the Particle libraries system, you should create a new folder named `/lib/<libraryname>/src` under `/<project dir>` and add the `.h` and `.cpp` files for your library there. All contents of the `/lib` folder and subfolders will also be sent to the Cloud for compilation.
 
+## Compiling your project
 
-LICENSE
+When you're ready to compile your project, make sure you have the correct Particle device target selected and run `particle compile <platform>` in the CLI or click the Compile button in the Desktop IDE. The following files in your project folder will be sent to the compile service:
 
-This software is licensed under the GNU GENERAL PUBLIC LICENSE Version 3
-
+- Everything in the `/src` folder, including your `.ino` application file
+- The `project.properties` file for your project
+- Any libraries stored under `lib/<libraryname>/src`
