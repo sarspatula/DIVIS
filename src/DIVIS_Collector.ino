@@ -2,9 +2,15 @@
 // DIVIS VERSION NOTES
 //========================================
 
-// v 0081
+// v 0082
 // add nighttime scheduling and deep sleep per cycle functionality
 // fixed bug where string length was causing the API to be truncated on the thingspeak json. converted measurement values to integers before adding to the json string.
+// added  particle.publish events to be able to view the currentHour and runtime and other metrics
+
+//========================================
+// Test Status: Not tested
+//========================================
+
 
 //========================================
 // Resources
@@ -123,15 +129,15 @@ TCA9548A mux(Wire, 0);
 boolean commonAnode = false;
 char szInfo[128];
 
-Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X);
+Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_24MS, TCS34725_GAIN_1X);
 
 // integration time options: 2? or 4?, 24, 50, 101, 154, 700
 // gain options; 1, 4, 16, 60
 
 //*****************Configuration Variables***********************
-#define g_numDevice 4 // set number of TCS devices
+#define g_numDevice 8 // set number of TCS devices
 #define g_sample 150 // set number of samples per cycle
-#define sleepHour 22 // set 24 hour time to start night sleep
+#define sleepHour 21 // set 24 hour time to start night sleep
 #define wakeHour 6 // set 24 hour time to wake
 #define restTime 240 // set time to rest between cycles in seconds
 //***************************************************************
@@ -145,8 +151,8 @@ float b_coef[g_numDevice];
 
 //Variables for writing to Thingspeak
 String TSjson;
-String api_key = "T40C52G76D4ZB47D"; // Replace this string with a valid ThingSpeak Write API Key.
-String field1 = "50ms/1x";
+String api_key = "VLCV4WYEJY2V5WAU"; // Replace this string with a valid ThingSpeak Write API Key.
+String field1 = "24ms/1x";
 String field2 = "";  // i.e. field2 is null
 String field3 = "";
 String field4 = "";
@@ -173,11 +179,11 @@ void setup() {
 
 void loop() {
 
-		sampleMulti(g_numDevice,g_sample,0,0); //take samples from all devices
+		nightTimeSchedule(); // turns off at nighttime
+		sampleMulti(g_numDevice,g_sample,1,1); //take samples from all devices
 		createTSjson(TSjson,g_numDevice); // creates the json string to pass to thingspeak
 		publishToThingSpeak(); // publishes data to thingspeak
 		delay(restTime * 1000); // simulating being in sleep mode
-		nightTimeSchedule(); // turns off at nighttime
 		//System.sleep(SLEEP_MODE_DEEP, restTime);
     }
 
@@ -190,15 +196,17 @@ void initializeTCS(int device) {
 
    mux.setChannel(device);
        if (tcs.begin()) {
-        Serial.println("Found sensor");
+        Serial.print("Found sensor:");
+				Serial.println(device);
     } else {
         Serial.println("No TCS34725 found ... check your connections");
+				Particle.publish("Initialization error",NULL,60,PRIVATE);
         while (1); // halt!
     }
 
     mux.setChannel(device);
     tcs.setInterrupt(true);
-		delay(60);
+		delay(100);
 }
 
 // initializes all devices
@@ -207,6 +215,7 @@ void initializeMultiTCS(int numDevice){
 	for(int i=0;i<numDevice;i++){
 		initializeTCS(i);
 	}
+	Particle.publish("All TCS34725 Found!",NULL,60,PRIVATE);
 }
 
 // collects a single data point from one TCS34725 sensor and saves to global red/green/blue/clear variables
@@ -270,8 +279,9 @@ if(printbool==1){
 // samples from multile devices, one sample each in turn, in a loop
 // creates aggregate data in an array then overrights that data with the mean
 void sampleMulti(int numDevice, int samples, bool printbool, bool multiprintbool){
-	unsigned long start = millis();
-	float runtime = 0;
+	 Particle.publish("Start Data Collection",NULL,60,PRIVATE);
+	 unsigned long start = millis();
+	 float runtime = 0;
 	 float r [numDevice];
 	 float g [numDevice];
 	 float b [numDevice];
@@ -307,6 +317,8 @@ for (int i=0; i<numDevice; i++){
 
 
 		runtime = (millis() - start)/1000;
+		Particle.publish("Runtime",String(runtime),60,PRIVATE);
+		Serial.println(runtime);
 
 if (multiprintbool == 1) {
 		for (int i=0; i<numDevice; i++){
@@ -319,29 +331,38 @@ if (multiprintbool == 1) {
 			Serial.print("|");
 			Serial.print(g[i]);
 			Serial.print("|");
-			Serial.print(c[i]);
-			Serial.print("   ||   ");
-			Serial.println(runtime);
+			Serial.println(c[i]);
 		}
 	}
 }
 
 void publishToThingSpeak(){
 	Particle.publish("divisWrite_", TSjson, 60, PRIVATE);
-	Serial.print("publishing to Thingspeak...");
-	delay(20000); //ensures minimum time between writes to thingspeak.
+	Particle.publish("divisString",String(TSjson.length()),60,PRIVATE);
+	Serial.println("publishing to Thingspeak...");
+	//delay(20000); //ensures minimum time between writes to thingspeak.
 	//Make sure to delete this delay once the device is put into deep sleep between readings
 }
 
-
 void nightTimeSchedule(){
+// checks for day light savings time and sets the time zone offset from UTC
+	if(Time.isDST() == 1){
+
+		Time.zone(-8); // sets timezone to PST w/out daylight savings
+	}
+	else{
+		Time.zone(-7); // sets timezone to PST w/ daylight savings
+	}
 	int currentHour = Time.hour();
+	Particle.publish("hour_", "CurrentHour: " + String(currentHour) + " / " + "IsDST: " + String(Time.isDST()), 60, PRIVATE);
 	int sleepTime = (24 - sleepHour + wakeHour + 1) * 60 * 60; // converts sleep and wake hours to a sleep time in seconds
+	int sleepHours = (24-sleepHour + wakeHour +1);
 	if (currentHour >= sleepHour){
+		Particle.publish("going to sleep",String(sleepHours),60,PRIVATE);
+		delay(5000);
 		System.sleep(SLEEP_MODE_DEEP, sleepTime);
 	}
 }
-
 
 //****************************WebHook Notes and Functions**************************************************
 //This code was modified from the following sources
@@ -358,12 +379,8 @@ void createTSjson(String &dest, int numDevice) {
 		dest = "{";
 
 
-		if(field1.length()>0){
-				dest = dest + "\"1\":\""+ field1 +"\",";
-		}
-
 		for (int i=0; i<numDevice; i++){
-			int field=i+2;
+			int field=i+1;
 			if(sensorReadings[i].length()>0){
 					dest = dest + "\""+ field +"\":\""+ sensorReadings[i] +"\",";
 			}
