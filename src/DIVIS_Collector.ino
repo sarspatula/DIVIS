@@ -179,7 +179,7 @@ void setup() {
 
 void loop() {
 
-		nightTimeSchedule(); // turns off at nighttime
+		nightTime(); // turns off at nighttime
 		sampleMulti(g_numDevice,g_sample,1,1); //take samples from all devices
 		createTSjson(TSjson,g_numDevice); // creates the json string to pass to thingspeak
 		publishToThingSpeak(); // publishes data to thingspeak
@@ -344,7 +344,7 @@ void publishToThingSpeak(){
 	//Make sure to delete this delay once the device is put into deep sleep between readings
 }
 
-void nightTimeSchedule(){
+void nightTime(){
 // checks for day light savings time and sets the time zone offset from UTC
 	if(Time.isDST() == 1){
 
@@ -355,10 +355,10 @@ void nightTimeSchedule(){
 	}
 	int currentHour = Time.hour();
 	Particle.publish("hour_", "CurrentHour: " + String(currentHour) + " / " + "IsDST: " + String(Time.isDST()), 60, PRIVATE);
-	int sleepTime = (24 - sleepHour + wakeHour + 1) * 60 * 60; // converts sleep and wake hours to a sleep time in seconds
-	int sleepHours = (24-sleepHour + wakeHour +1);
+
 	if (currentHour >= sleepHour){
-		Particle.publish("going to sleep",String(sleepHours),60,PRIVATE);
+		int sleepSeconds = sleepHours * 60 * 60; // converts sleep and wake hours to a sleep time in seconds
+		Particle.publish("going to sleep",String(sleepSeconds),60,PRIVATE);
 		delay(5000);
 		System.sleep(SLEEP_MODE_DEEP, sleepTime);
 	}
