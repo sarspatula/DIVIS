@@ -357,10 +357,11 @@ void nightTime(){
 	Particle.publish("hour_", "CurrentHour: " + String(currentHour) + " / " + "IsDST: " + String(Time.isDST()), 60, PRIVATE);
 
 	if (currentHour >= sleepHour){
+		int sleepHours = (24 - sleepHour + wakeHour); // calculates sleep time from sleephour and wake hour
 		int sleepSeconds = sleepHours * 60 * 60; // converts sleep and wake hours to a sleep time in seconds
 		Particle.publish("going to sleep",String(sleepSeconds),60,PRIVATE);
 		delay(5000);
-		System.sleep(SLEEP_MODE_DEEP, sleepTime);
+		System.sleep(SLEEP_MODE_DEEP, sleepSeconds);
 	}
 }
 
