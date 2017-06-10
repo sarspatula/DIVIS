@@ -2,10 +2,8 @@
 // DIVIS VERSION NOTES
 //========================================
 
-// v 0082
-// add nighttime scheduling and deep sleep per cycle functionality
-// fixed bug where string length was causing the API to be truncated on the thingspeak json. converted measurement values to integers before adding to the json string.
-// added  particle.publish events to be able to view the currentHour and runtime and other metrics
+// v 009
+// adding coeficients for sensors in order to lower error readings
 
 //========================================
 // Test Status: Not tested
@@ -140,13 +138,23 @@ Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_24MS, TCS3472
 #define sleepHour 21 // set 24 hour time to start night sleep
 #define wakeHour 6 // set 24 hour time to wake
 #define restTime 240 // set time to rest between cycles in seconds
+//*********************Sensor Corretion Coefficients*************
+float r_coef[] = {1.0,1.0,1.0,1.0,1.0,1.0};
+float g_coef[] = {1.0,1.0,1.0,1.0,1.0,1.0};
+float b_coef[] = {1.0,1.0,1.0,1.0,1.0,1.0};
+float c_coef[] = {1.0,1.0,1.0,1.0,1.0,1.0};
+
+/* // Values from first full day of testing with 8 sensors
+float r_coef[] = {1.0814,0.9905,1.072,1.0217,1.0477,1.0237};
+float g_coef[] = {1.0162,0.9667,0.9429,0.9502,0.9992,1.0094};
+float b_coef[] = {1.0103,0.9552,0.9584,0.9673,0.9823,0.991};
+float c_coef[] = {1.0349,0.9901,1.0383,1.0155,1.0046,1.0148};
+*/
 //***************************************************************
 
 uint16_t clear, red, green, blue;
 String sensorReadings[g_numDevice];
-float r_coef[g_numDevice];
-float g_coef[g_numDevice];
-float b_coef[g_numDevice];
+
 
 
 //Variables for writing to Thingspeak
@@ -180,7 +188,7 @@ void setup() {
 void loop() {
 
 		nightTime(); // turns off at nighttime
-		sampleMulti(g_numDevice,g_sample,1,1); //take samples from all devices
+		sampleMulti(g_numDevice,g_sample,1,1); //take samples from all devices saves the to an array which is concatenated into a string
 		createTSjson(TSjson,g_numDevice); // creates the json string to pass to thingspeak
 		publishToThingSpeak(); // publishes data to thingspeak
 		delay(restTime * 1000); // simulating being in sleep mode
@@ -294,10 +302,10 @@ void sampleMulti(int numDevice, int samples, bool printbool, bool multiprintbool
 		for (int i=0; i<samples; i++){
 				for (int i=0; i<numDevice; i++) {
 					collect(i, printbool);
-					r[i] = r[i] + red;
-					b[i] = b[i] + blue;
-					g[i] = g[i] + green;
-					c[i] = c[i] + clear;
+					r[i] = r[i] + (red * r_coef[i]);
+					b[i] = b[i] + (blue * b_coef[i]);
+					g[i] = g[i] + (green * g_coef[i]);
+					c[i] = c[i] + (clear * c_coef[i]);
 				}
 			}
 
