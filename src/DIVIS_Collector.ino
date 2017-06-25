@@ -3,7 +3,8 @@
 //========================================
 
 // v 010
-// adding additional metrics which measure and average differences between sensor readings and report them to a second thingspeak channel
+// Reworked the process for defining the variables that are used in the thingspeak json. 
+// Modified the code for use with two sensors, the MVP version of the DIVIS sensor
 // removed functions that are obsolete
 
 //========================================
