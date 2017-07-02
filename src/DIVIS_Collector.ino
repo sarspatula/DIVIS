@@ -7,7 +7,6 @@
 // Adding code for solar management
 // Move thingspeak messages to thingspeak library
 
-
 //========================================
 // Test Status: Not tested
 //========================================
