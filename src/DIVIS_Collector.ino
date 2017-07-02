@@ -8,7 +8,7 @@
 // Move thingspeak messages to thingspeak library
 
 //========================================
-// Test Status: Not tested
+// Test Status: Tested
 //========================================
 
 
