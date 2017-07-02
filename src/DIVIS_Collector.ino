@@ -2,10 +2,10 @@
 // DIVIS VERSION NOTES
 //========================================
 
-// v 010
-// Reworked the process for defining the variables that are used in the thingspeak json. 
-// Modified the code for use with two sensors, the MVP version of the DIVIS sensor
-// removed functions that are obsolete
+// v 011
+// Adding code to use electron instead of photon
+// Adding code for solar management
+// Move thingspeak messages to thingspeak library
 
 //========================================
 // Test Status: Not tested
@@ -15,9 +15,16 @@
 //========================================
 // Resources
 //========================================
+
 //Guide to creating webhooks to thingspeak:
-//https://docs.particle.io/guide/tools-and-features/webhooks/
-//https://www.hackster.io/15223/thingspeak-particle-photon-using-webhooks-dbd96c
+	//https://docs.particle.io/guide/tools-and-features/webhooks/
+	//https://www.hackster.io/15223/thingspeak-particle-photon-using-webhooks-dbd96c
+
+// softi2c library for particle and TCS34725 sensors from leo3linbeck
+	//https://github.com/leo3linbeck/spark-softi2c-tcs347265/tree/master
+
+// code for solar management from this post
+	// https://community.particle.io/t/powering-electron-via-solar-power/30399/2
 
 //Thingspeak channel ID: 271987
 //thingspeak API key: T40C52G76D4ZB47D
@@ -117,15 +124,19 @@ bool TCA9548A::writeControl(uint8_t value) {
 //*******************************************************************
 //*********************Start Primary Code****************************
 
+// set electron to semiautomatic mode
+SYSTEM_MODE(SEMI_AUTOMATIC);
+
 // This #include statement was automatically added by the Spark IDE.
 #include "Adafruit_TCS34725/Adafruit_TCS34725.h"
 #include <Wire.h>
 #include <math.h>
+#include <ThingSpeak.h>
 //#include "src/statistic.h"
 // https://github.com/rickkas7/TCA9548A-RK
 
+TCPClient client;
 TCA9548A mux(Wire, 0);
-
 boolean commonAnode = false;
 char szInfo[128];
 
@@ -137,13 +148,19 @@ Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_24MS, TCS3472
 //*****************Configuration Variables***********************
 #define g_numDevice 2 // set number of TCS devices. Max = 7.
 #define g_sample 150 // set number of samples per cycle
-#define sleepHour 21 // set 24 hour time to start night sleep
+#define sleepHour 24 // set 24 hour time to start night sleep
 #define wakeHour 6 // set 24 hour time to wake
-#define restTime 60 // set time to rest between cycles in seconds
+#define restTime 600 // set time to rest between cycles in seconds
+#define lowBatRest 3600 // set time to rest if bat soc < 20
 #define sat_max 10240 // set the maximum value returned by the sensor for saturation calculations
-String DIVIS_ID = "001";
-//*********************Sensor Corretion Coefficients*************
-// must adjust depeding on number of sensors
+#define thingspeak_write_api "VLCV4WYEJY2V5WAU" // thingspeak api key for "DIVIS_Test_Channel"
+#define thingspeak_channel 282714 // thingspeak channel id
+String DIVIS_ID = "002";
+//*********************TCS34725 Variables*************
+
+uint16_t clear, red, green, blue; // varibles to save initial TCS34725 color readings
+
+// Coefficients to calibrate sensors
 float r_coef[] = {1.0,0.97096181};
 float g_coef[] = {1.0,0.989730857};
 float b_coef[] = {1.0,1.001603333};
@@ -152,17 +169,7 @@ float c_coef[] = {1.0,0.984265143};
 
 //***************************************************************
 
-uint16_t clear, red, green, blue;
-String sensor_raw[g_numDevice];
-String sensor_diff[g_numDevice];
-String TSjson;
-String api_key = "CCDMJAB229VPBB5O"; // api key for red and green data
-
-//variables to count saturation for each color reading
-
-//Variables for writing to raw channel
-
-String field1 = "1"; // DIVIS ID
+String field1 = ""; // DIVIS ID
 String field2 = "";  // Upper sensor R,B,G,C
 String field3 = "";	 // Lower sensor R,B,G,C
 String field4 = "";	 // Saturation ratio R,G,B,C
@@ -176,7 +183,10 @@ String el = "";
 String status = "";
 
 
-//Variables for writing to raw channel
+//Variables for fuelgague
+FuelGauge fuel;
+String voltage = "0";
+double soc = 0;
 
 //************************************************
 //************* M A I N   L O O P ****************
@@ -186,25 +196,29 @@ void setup() {
     delay(100);
     Serial.begin(9600);
     Serial.println("Color View Test!");
-    mux.begin();
-    initializeMultiTCS(g_numDevice);
+	  ThingSpeak.begin(client);
+    //mux.begin();
+    //initializeMultiTCS(g_numDevice);
+		Particle.connect();
 }
 
 void loop() {
-
-		nightTime(); // turns off at nighttime
-		sampleMulti(g_numDevice,g_sample,1,1); //take samples from all devices saves the to an array which is concatenated into a string
-		createTSjson(TSjson); // creates the json string to pass to thingspeak
-		publishToThingSpeak(TSjson); // publishes raw data to thingspeak
-		delay(restTime * 1000); // simulating being in sleep mode
-		//System.sleep(SLEEP_MODE_DEEP, restTime);
+			//sampleMulti(g_numDevice,g_sample,1,1); //take samples from all devices saves the to an array which is concatenated into a string
+			Serial.println("starting battery report");
+			batteryReport(); // get voltage and soc from fuelgauge
+			Serial.print(soc);
+			Serial.print("::");
+			Serial.println(field8);
+			publishToThingSpeak(); // publishes raw data to thingspeak
+	    sleepManager();
     }
 
 //************************************************
 //************************************************
 //************************************************
 
-// INITIALIZATION
+/* ======================= INITIALIZE TCS34725 ======================== */
+
 void initializeTCS(int device) {
 
    mux.setChannel(device);
@@ -230,9 +244,10 @@ void initializeMultiTCS(int numDevice){
 	}
 	Particle.publish("All TCS34725 Found!",NULL,60,PRIVATE);
 }
-//======================================================
 
-//DATA COLLECTION
+
+/* ======================= DATA COLLECTION ======================== */
+
 // collects a single data point from one TCS34725 sensor and saves to global red/green/blue/clear variables
 void collect(int device, bool printbool){
 	mux.setChannel(device);
@@ -376,20 +391,16 @@ for (int i=0; i<numDevice; i++){
 		b_sat_ratio = (b_sat_counter/samples)*100;
 		c_sat_ratio = (c_sat_counter/samples)*100;
 
-// Map readings to sensor data
+// Concatenate readings and map readings to thingspeak fields
+// all fields must be strings
 
-		field1 = DIVIS_ID; // DIVIS ID
-		field2 = String(r_int[0]) + "," + String(g_int[0]) + "," + String(b_int[0]) + "," + String(c_int[0]);  // Upper sensor R,B,G,C
-		field3 = String(r_int[1]) + "," + String(g_int[1]) + "," + String(b_int[1]) + "," + String(c_int[1]);	 // Lower sensor R,B,G,C
-		field4 = String(r_sat_ratio) + "," + String(g_sat_ratio) + "," + String(b_sat_ratio) + "," + String(c_sat_ratio);  // Saturation ratio R,G,B,C
-		field5 = String(r_diff[0]);	 // r difference ratio
-		field6 = String(g_diff[0]);  // g difference ratio
-		field7 = String(b_diff[0]);	 // b difference ratio
-		field8 = String(c_diff[0]);	 // c difference ratio
-		lat = "";
-		lon = "";
-		el = "";
-		status = "";
+		field1 = String(r_int[0]) + "," + String(g_int[0]) + "," + String(b_int[0]) + "," + String(c_int[0]);  // Upper sensor R,B,G,C
+		field2 = String(r_int[1]) + "," + String(g_int[1]) + "," + String(b_int[1]) + "," + String(c_int[1]);	 // Lower sensor R,B,G,C
+		field3 = String(r_sat_ratio) + "," + String(g_sat_ratio) + "," + String(b_sat_ratio) + "," + String(c_sat_ratio);  // Saturation ratio R,G,B,C
+		field4 = String(r_diff[0]);	 // r difference ratio
+		field5 = String(g_diff[0]);  // g difference ratio
+		field6 = String(b_diff[0]);	 // b difference ratio
+		field7 = String(c_diff[0]);	 // c difference ratio
 
 
 		runtime = (millis() - start)/1000;
@@ -411,89 +422,28 @@ if (multiprintbool == 1) {
 		}
 	}
 }
-//======================================================
-
-
-//PUBLISH
+/* ======================= PUBLISH ======================== */
 
 //publish to thingspeak
-void publishToThingSpeak(String json){
-	Particle.publish("divisWrite_", json, 60, PRIVATE);
-	Particle.publish("divisString",String(json.length()),60,PRIVATE);
+void publishToThingSpeak(){
+
+	ThingSpeak.setField(1,field1);
+	ThingSpeak.setField(2,field2);
+	ThingSpeak.setField(3,field3);
+	ThingSpeak.setField(4,field4);
+	ThingSpeak.setField(5,field5);
+	ThingSpeak.setField(6,field6);
+	ThingSpeak.setField(7,field7);
+	ThingSpeak.setField(8,field8);
+
+	ThingSpeak.writeFields(thingspeak_channel, thingspeak_write_api);
 	Serial.println("publishing to Thingspeak...");
   delay(15000); //ensures minimum time between writes to thingspeak.
-	//Make sure to delete this delay once the device is put into deep sleep between readings
 }
 
-//Create Thingspeak Json
-//This code was modified from the following sources
-//Source1: https://www.hackster.io/15223/thingspeak-particle-photon-using-webhooks-dbd96c
-//Source2: https://github.com/mawrob/thingspeak-particle-webhookwrite/blob/master/source.ino
+/* ======================= SLEEP CONTROLLER ======================== */
 
-
-void createTSjson(String &dest) {
-
-
-		dest = "{";
-
-
-		if(field1.length()>0){
-					dest = dest + "\"1\":\""+ field1 +"\",";
-		}
-
-		if(field2.length()>0){
-					dest = dest + "\"2\":\""+ field2 +"\",";
-		}
-
-		if(field3.length()>0){
-					dest = dest + "\"3\":\""+ field3 +"\",";
-		}
-
-		if(field4.length()>0){
-					dest = dest + "\"4\":\""+ field4 +"\",";
-		}
-
-		if(field5.length()>0){
-					dest = dest + "\"5\":\""+ field5 +"\",";
-		}
-
-		if(field6.length()>0){
-					dest = dest + "\"6\":\""+ field6 +"\",";
-		}
-
-		if(field7.length()>0){
-					dest = dest + "\"7\":\""+ field7 +"\",";
-		}
-
-		if(field8.length()>0){
-					dest = dest + "\"8\":\""+ field8 +"\",";
-		}
-
-    if(lat.length()>0){
-        dest = dest + "\"a\":\""+ lat +"\",";
-    }
-
-    if(lon.length()>0){
-        dest = dest + "\"o\":\""+ lon +"\",";
-    }
-
-    if(el.length()>0){
-        dest = dest + "\"e\":\""+ el +"\",";
-    }
-
-    if(status.length()>0){
-        dest = dest + "\"s\":\""+ status +"\",";
-    }
-
-    dest = dest + "\"k\":\"" + api_key + "\"}";
-
-		Serial.println(TSjson);
-
-}
-//=========================================================
-
-//SLEEP CONTROLL
-void nightTime(){
+void sleepManager(){
 // checks for day light savings time and sets the time zone offset from UTC
 	if(Time.isDST() == 1){
 
@@ -502,15 +452,27 @@ void nightTime(){
 	else{
 		Time.zone(-7); // sets timezone to PST w/ daylight savings
 	}
-	int currentHour = Time.hour();
-	Particle.publish("hour_", "CurrentHour: " + String(currentHour) + " / " + "IsDST: " + String(Time.isDST()), 60, PRIVATE);
+	int currentHour = Time.hour(); // gets the current time in hours
 
 	if (currentHour >= sleepHour){
 		int sleepHours = (24 - sleepHour + wakeHour); // calculates sleep time from sleephour and wake hour
 		int sleepSeconds = sleepHours * 60 * 60; // converts sleep and wake hours to a sleep time in seconds
-		Particle.publish("going to sleep",String(sleepSeconds),60,PRIVATE);
-		delay(5000);
-		System.sleep(SLEEP_MODE_DEEP, sleepSeconds);
+		System.sleep(SLEEP_MODE_SOFTPOWEROFF, sleepSeconds);
+    delay(5000);
+	}
+	else if(soc < 20){
+	    System.sleep(SLEEP_MODE_SOFTPOWEROFF, 3600); // if the battery falls below 20% sleep for 1 hour and try again.
+	}
+	else{
+	    System.sleep(SLEEP_MODE_SOFTPOWEROFF, restTime); // sleep for 5 minutes if bat > 20% AND during day hours
 	}
 }
-//===============================================================
+
+//==========================Battery Report=====================================
+
+void batteryReport()
+{
+  voltage = String(fuel.getVCell());
+  soc = fuel.getSoC();
+	field8 = String(soc);
+}
