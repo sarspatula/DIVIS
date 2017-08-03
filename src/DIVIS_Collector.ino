@@ -153,8 +153,8 @@ Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_24MS, TCS3472
 #define restTime 600 // set time to rest between cycles in seconds
 #define lowBatRest 3600 // set time to rest if bat soc < 20
 #define sat_max 10240 // set the maximum value returned by the sensor for saturation calculations
-#define thingspeak_write_api "VLCV4WYEJY2V5WAU" // thingspeak api key for "DIVIS_Test_Channel"
-#define thingspeak_channel 282714 // thingspeak channel id
+#define thingspeak_write_api "AJ5IOQ8UJUQ4457V" // thingspeak api key for "DIVIS_Test_Channel"
+#define thingspeak_channel 310187 // thingspeak channel id
 String DIVIS_ID = "002";
 //*********************TCS34725 Variables*************
 
@@ -197,13 +197,13 @@ void setup() {
     Serial.begin(9600);
     Serial.println("Color View Test!");
 	  ThingSpeak.begin(client);
-    //mux.begin();
-    //initializeMultiTCS(g_numDevice);
+    mux.begin();
+    initializeMultiTCS(g_numDevice);
 		Particle.connect();
 }
 
 void loop() {
-			//sampleMulti(g_numDevice,g_sample,1,1); //take samples from all devices saves the to an array which is concatenated into a string
+			sampleMulti(g_numDevice,g_sample,1,1); //take samples from all devices saves the to an array which is concatenated into a string
 			Serial.println("starting battery report");
 			batteryReport(); // get voltage and soc from fuelgauge
 			Serial.print(soc);
