@@ -414,8 +414,8 @@ for (int i=0; i<numDevice; i++){
 
 		field1 = DIVIS_ID;
 		//field2 = hold for battery updated later
-		field3 = String(green_atten)//attenuation_coef(green)
-		field4 = String(blue_atten)//attenuation_coef(blue)
+		field3 = String(green_atten); //attenuation_coef(green)
+		field4 = String(blue_atten); //attenuation_coef(blue)
 		field5 = String(c_int[0]);	 // c value for the upper sensor
 		field6 = String(c_int[1]);	 // c value for the lower sensor
 		field7 = String(r_int[0]) + "|" + String(g_int[0]) + "|" + String(b_int[0]) + "|" + String(c_int[0]);  // Upper sensor R,B,G,C
