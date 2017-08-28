@@ -2,13 +2,15 @@
 // DIVIS VERSION NOTES
 //========================================
 
-// v 011
-// Adding code to use electron instead of photon
-// Adding code for solar management
-// Move thingspeak messages to thingspeak library
+// v 012
+// Changed data delimiter from "," to "|".
+// Updated parameters for testing
+// added g/b as a metric which is reported to thingspeak
+// augmented other thingspeak fields: consolidated r and b diff, added back the device ID, added the "c" value for the lower sensor
+
 
 //========================================
-// Test Status: Tested
+// Test Status: Not Tested
 //========================================
 
 
@@ -142,14 +144,16 @@ char szInfo[128];
 
 Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_24MS, TCS34725_GAIN_1X);
 
-// integration time options: 2? or 4?, 24, 50, 101, 154, 700
+// integration time options: 2_4, 24, 50, 101, 154, 700
 // gain options; 1, 4, 16, 60
 
 //*****************Configuration Variables***********************
 #define g_numDevice 2 // set number of TCS devices. Max = 7.
-#define g_sample 150 // set number of samples per cycle
-#define sleepHour 24 // set 24 hour time to start night sleep
-#define wakeHour 6 // set 24 hour time to wake
+#define depth_sensor1 1.524 //depth in feet
+#define depth_sensor2 4.572 // depth in feet
+#define g_sample 500 // set number of samples per cycle
+#define sleepHour 21 // set 24 hour time to start night sleep
+#define wakeHour 7 // set 24 hour time to wake
 #define restTime 600 // set time to rest between cycles in seconds
 #define lowBatRest 3600 // set time to rest if bat soc < 20
 #define sat_max 10240 // set the maximum value returned by the sensor for saturation calculations
@@ -161,12 +165,17 @@ String DIVIS_ID = "002";
 uint16_t clear, red, green, blue; // varibles to save initial TCS34725 color readings
 
 // Coefficients to calibrate sensors
+float r_coef[] = {1.0,1.0};
+float g_coef[] = {1.0,1.0};
+float b_coef[] = {1.0,1.0};
+float c_coef[] = {1.0,1.0};
+
+/*
 float r_coef[] = {1.0,0.97096181};
 float g_coef[] = {1.0,0.989730857};
 float b_coef[] = {1.0,1.001603333};
 float c_coef[] = {1.0,0.984265143};
-
-
+*/
 //***************************************************************
 
 String field1 = ""; // DIVIS ID
@@ -340,6 +349,9 @@ void sampleMulti(int numDevice, int samples, bool printbool, bool multiprintbool
 	 int b_sat_ratio = 0;
 	 int c_sat_ratio = 0;
 
+// VARIABLES FOR PRIMARY PREDICTION
+	 float g_b_atten_rat = 0;
+
 
 
 // Take N samples from each device and create a running total. each device is polled in tern, in order to make observations between devices as close together in time as possible
@@ -352,6 +364,8 @@ void sampleMulti(int numDevice, int samples, bool printbool, bool multiprintbool
 					c[i] = c[i] + (clear * c_coef[i]);
 
 					// count readings with saturation on the upper sensor
+					// for RBG we check saturation of the upper sensor
+					// for c we check saturation of the lower sensor
 					if ((i==0) && (red > (sat_max * 0.7))){
 						r_sat_counter = r_sat_counter + 1;
 					}
@@ -361,7 +375,7 @@ void sampleMulti(int numDevice, int samples, bool printbool, bool multiprintbool
 					if ((i==0) && (blue > (sat_max * 0.7))){
 						b_sat_counter = b_sat_counter + 1;
 					}
-					if ((i==0) && (clear > (sat_max * 0.7))){
+					if ((i==1) && (clear > (sat_max * 0.7))){ // only consider saturation for the lower c metric
 						c_sat_counter = c_sat_counter + 1;
 					}
 
@@ -370,10 +384,10 @@ void sampleMulti(int numDevice, int samples, bool printbool, bool multiprintbool
 
 
 for(int i=0; i<(numDevice-1); i++){
-	r_diff[i] = (r[i] - r[i+1])/r[i];
-	g_diff[i] = (g[i] - g[i+1])/g[i];
-	b_diff[i] = (b[i] - b[i+1])/b[i];
-	c_diff[i] = (c[i] - c[i+1])/c[i];
+	r_diff[i] = (r[i] / r[i+1]);
+	g_diff[i] = (g[i] / g[i+1]);
+	b_diff[i] = (b[i] / b[i+1]);
+	c_diff[i] = (c[i] / c[i+1]);
 }
 
 
@@ -391,16 +405,19 @@ for (int i=0; i<numDevice; i++){
 		b_sat_ratio = (b_sat_counter/samples)*100;
 		c_sat_ratio = (c_sat_counter/samples)*100;
 
+// G TO B ATTENUATION RATIO
+		g_b_atten_rat = b_diff[0] / g_diff[0];
+
 // Concatenate readings and map readings to thingspeak fields
 // all fields must be strings
 
-		field1 = String(r_int[0]) + "," + String(g_int[0]) + "," + String(b_int[0]) + "," + String(c_int[0]);  // Upper sensor R,B,G,C
-		field2 = String(r_int[1]) + "," + String(g_int[1]) + "," + String(b_int[1]) + "," + String(c_int[1]);	 // Lower sensor R,B,G,C
-		field3 = String(r_sat_ratio) + "," + String(g_sat_ratio) + "," + String(b_sat_ratio) + "," + String(c_sat_ratio);  // Saturation ratio R,G,B,C
-		field4 = String(r_diff[0]);	 // r difference ratio
-		field5 = String(g_diff[0]);  // g difference ratio
-		field6 = String(b_diff[0]);	 // b difference ratio
-		field7 = String(c_diff[0]);	 // c difference ratio
+		field1 = DIVIS_ID;
+		field2 = String(r_int[0]) + "|" + String(g_int[0]) + "|" + String(b_int[0]) + "|" + String(c_int[0]);  // Upper sensor R,B,G,C
+		field3 = String(r_int[1]) + "|" + String(g_int[1]) + "|" + String(b_int[1]) + "|" + String(c_int[1]);	 // Lower sensor R,B,G,C
+		field4 = String(r_sat_ratio) + "|" + String(g_sat_ratio) + "|" + String(b_sat_ratio) + "|" + String(c_sat_ratio);  // Saturation ratio R,G,B,C
+		field5 = String(g_b_atten_rat);	 // ratio of green and blue light attenuation
+		field6 = String(g_diff[0]) + "|" + String(b_diff[0]);  // g and b difference ratios
+		field7 = String(c_int[1]);	 // c value for the lower sensor
 
 
 		runtime = (millis() - start)/1000;
