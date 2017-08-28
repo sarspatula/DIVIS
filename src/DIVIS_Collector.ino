@@ -408,7 +408,7 @@ for (int i=0; i<numDevice; i++){
 
 // G & B ATTENUATION Coefficients
 		green_atten = log(g[1]/g[0])/(depth_sensor2-depth_sensor1);
-		blue_atten = log(g[1]/g[0])/(depth_sensor2-depth_sensor1);
+		blue_atten = log(b[1]/b[0])/(depth_sensor2-depth_sensor1);
 // Concatenate readings and map readings to thingspeak fields
 // all fields must be strings
 
