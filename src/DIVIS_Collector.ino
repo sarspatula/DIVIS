@@ -7,7 +7,8 @@
 // Updated parameters for testing
 // added g/b as a metric which is reported to thingspeak
 // augmented other thingspeak fields: consolidated r and b diff, added back the device ID, added the "c" value for the lower sensor
-
+// adding Ked values science literature
+//
 
 //========================================
 // Test Status: Not Tested
@@ -149,8 +150,8 @@ Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_24MS, TCS3472
 
 //*****************Configuration Variables***********************
 #define g_numDevice 2 // set number of TCS devices. Max = 7.
-#define depth_sensor1 1.524 //depth in feet
-#define depth_sensor2 4.572 // depth in feet
+#define depth_sensor1 1.524 //depth in meters
+#define depth_sensor2 4.572 // depth in meters
 #define g_sample 500 // set number of samples per cycle
 #define sleepHour 21 // set 24 hour time to start night sleep
 #define wakeHour 7 // set 24 hour time to wake
@@ -350,8 +351,8 @@ void sampleMulti(int numDevice, int samples, bool printbool, bool multiprintbool
 	 int c_sat_ratio = 0;
 
 // VARIABLES FOR PRIMARY PREDICTION
-	 float g_b_atten_rat = 0;
-
+	 double green_atten = 0;
+	 double blue_atten = 0;
 
 
 // Take N samples from each device and create a running total. each device is polled in tern, in order to make observations between devices as close together in time as possible
@@ -405,19 +406,20 @@ for (int i=0; i<numDevice; i++){
 		b_sat_ratio = (b_sat_counter/samples)*100;
 		c_sat_ratio = (c_sat_counter/samples)*100;
 
-// G TO B ATTENUATION RATIO
-		g_b_atten_rat = b_diff[0] / g_diff[0];
-
+// G & B ATTENUATION Coefficients
+		green_atten = log(g[1]/g[0])/(depth_sensor2-depth_sensor1);
+		blue_atten = log(g[1]/g[0])/(depth_sensor2-depth_sensor1);
 // Concatenate readings and map readings to thingspeak fields
 // all fields must be strings
 
 		field1 = DIVIS_ID;
-		field2 = String(r_int[0]) + "|" + String(g_int[0]) + "|" + String(b_int[0]) + "|" + String(c_int[0]);  // Upper sensor R,B,G,C
-		field3 = String(r_int[1]) + "|" + String(g_int[1]) + "|" + String(b_int[1]) + "|" + String(c_int[1]);	 // Lower sensor R,B,G,C
-		field4 = String(r_sat_ratio) + "|" + String(g_sat_ratio) + "|" + String(b_sat_ratio) + "|" + String(c_sat_ratio);  // Saturation ratio R,G,B,C
-		field5 = String(g_b_atten_rat);	 // ratio of green and blue light attenuation
-		field6 = String(g_diff[0]) + "|" + String(b_diff[0]);  // g and b difference ratios
-		field7 = String(c_int[1]);	 // c value for the lower sensor
+		//field2 = hold for battery updated later
+		field3 = String(green_atten)//attenuation_coef(green)
+		field4 = String(blue_atten)//attenuation_coef(blue)
+		field5 = String(c_int[0]);	 // c value for the upper sensor
+		field6 = String(c_int[1]);	 // c value for the lower sensor
+		field7 = String(r_int[0]) + "|" + String(g_int[0]) + "|" + String(b_int[0]) + "|" + String(c_int[0]);  // Upper sensor R,B,G,C
+		field8 = String(r_int[1]) + "|" + String(g_int[1]) + "|" + String(b_int[1]) + "|" + String(c_int[1]);	 // Lower sensor R,B,G,C
 
 
 		runtime = (millis() - start)/1000;
@@ -491,5 +493,5 @@ void batteryReport()
 {
   voltage = String(fuel.getVCell());
   soc = fuel.getSoC();
-	field8 = String(soc);
+	field2 = String(soc);
 }
