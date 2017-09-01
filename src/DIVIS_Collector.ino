@@ -8,7 +8,7 @@
 // added g/b as a metric which is reported to thingspeak
 // augmented other thingspeak fields: consolidated r and b diff, added back the device ID, added the "c" value for the lower sensor
 // adding Ked values science literature
-//
+// fixed a bug where light attenuation_coef were both using gree values, causing both coef to be the same value
 
 //========================================
 // Test Status: Not Tested
