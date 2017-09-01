@@ -8,7 +8,7 @@
 // added g/b as a metric which is reported to thingspeak
 // augmented other thingspeak fields: consolidated r and b diff, added back the device ID, added the "c" value for the lower sensor
 // adding Ked values science literature
-//
+// fixed a bug where light attenuation_coef were both using gree values, causing both coef to be the same value
 
 //========================================
 // Test Status: Not Tested
@@ -408,7 +408,7 @@ for (int i=0; i<numDevice; i++){
 
 // G & B ATTENUATION Coefficients
 		green_atten = log(g[1]/g[0])/(depth_sensor2-depth_sensor1);
-		blue_atten = log(g[1]/g[0])/(depth_sensor2-depth_sensor1);
+		blue_atten = log(b[1]/b[0])/(depth_sensor2-depth_sensor1);
 // Concatenate readings and map readings to thingspeak fields
 // all fields must be strings
 
